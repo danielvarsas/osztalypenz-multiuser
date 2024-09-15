@@ -1,0 +1,108 @@
+# Node.js dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Binaries for programs and libraries
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Python Bytecode
+__pycache__/
+*.py[cod]
+
+# Python virtual environments
+venv/
+env/
+.env/
+
+# Python-specific files
+*.pyo
+*.pyd
+*.whl
+
+# Python logs
+*.log
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints
+
+# Coverage reports
+htmlcov/
+.coverage
+*.cover
+*.py,cover
+.coverage.*
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Database files
+*.sqlite3
+
+# Unit test / coverage reports
+.cache
+.nox
+.tox
+.pytest_cache/
+.coverage
+.cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# VS Code
+.vscode/
+
+# IDE directories
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Backup files
+*.bak
+*.swp
+*.tmp
+*.temp
