@@ -1,0 +1,97 @@
+/* ManageChildren.css */
+
+.manage-children-container {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+}
+
+.message {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #d9534f;
+}
+
+.children-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.child-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.child-name {
+  flex: 1;
+  font-size: 16px;
+  color: #333;
+}
+
+.child-input {
+  flex: 1;
+  margin-right: 8px;
+  padding: 4px;
+  font-size: 16px;
+}
+
+.btn {
+  padding: 4px 8px;
+  margin-left: 4px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.modify-btn,
+.save-btn,
+.delete-btn {
+  margin: 0 4px; /* Ensure both buttons are close to each other */
+}
+
+.modify-btn {
+  background-color: #5bc0de;
+  color: white;
+}
+
+.save-btn {
+  background-color: #5cb85c;
+  color: white;
+}
+
+.delete-btn {
+  background-color: #d9534f;
+  color: white;
+}
+
+.add-child-section {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.new-child-input {
+  flex: 1;
+  margin-right: 8px;
+  padding: 8px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.add-btn {
+  background-color: #5cb85c;
+  color: white;
+}
