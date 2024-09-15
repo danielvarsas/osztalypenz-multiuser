@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom'; // Import useParams to get className from URL
 import axios from 'axios';
 import './ManageChildren.css'; // Import a CSS file for styles
 
 const ManageChildren = () => {
+  const { className } = useParams(); // Get the class name from the URL
   const [children, setChildren] = useState([]);
   const [newChildName, setNewChildName] = useState('');
   const [editingChild, setEditingChild] = useState(null);
@@ -12,8 +14,13 @@ const ManageChildren = () => {
   useEffect(() => {
     const fetchChildren = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:5000/children');
-        setChildren(response.data);
+        // Update the API endpoint to include the className
+        const response = await axios.get(`http://127.0.0.1:5000/${className}/children`);
+
+        // Filter out the child with ID 1 (technical item)
+        const filteredChildren = response.data.filter((child) => child.id !== 1);
+
+        setChildren(filteredChildren);
       } catch (error) {
         console.error('Error fetching children:', error);
         setMessage('Error fetching children.');
@@ -21,7 +28,7 @@ const ManageChildren = () => {
     };
 
     fetchChildren();
-  }, []);
+  }, [className]); // Add className as a dependency to re-run when it changes
 
   // Function to handle adding a child
   const handleAddChild = async () => {
@@ -31,7 +38,8 @@ const ManageChildren = () => {
     }
 
     try {
-      const response = await axios.post('http://127.0.0.1:5000/children', { name: newChildName });
+      // Update the API endpoint to include the className
+      const response = await axios.post(`http://127.0.0.1:5000/${className}/children`, { name: newChildName });
       setChildren([...children, { id: response.data.id, name: newChildName }]); // Append the new child to the list
       setNewChildName('');
       setMessage('Child added successfully!');
@@ -44,7 +52,8 @@ const ManageChildren = () => {
   // Function to handle deleting a child
   const handleDeleteChild = async (childId) => {
     try {
-      await axios.delete(`http://127.0.0.1:5000/children/${childId}`);
+      // Update the API endpoint to include the className
+      await axios.delete(`http://127.0.0.1:5000/${className}/children/${childId}`);
       setChildren(children.filter((child) => child.id !== childId)); // Remove the child from the list
       setMessage('Child deleted successfully!');
     } catch (error) {
@@ -61,7 +70,8 @@ const ManageChildren = () => {
     }
 
     try {
-      await axios.put(`http://127.0.0.1:5000/children/${child.id}`, { name: editingChild.name });
+      // Update the API endpoint to include the className
+      await axios.put(`http://127.0.0.1:5000/${className}/children/${child.id}`, { name: editingChild.name });
       setChildren(children.map((c) => (c.id === child.id ? { ...c, name: editingChild.name } : c))); // Update the modified child in the list
       setEditingChild(null);
       setMessage('Child modified successfully!');

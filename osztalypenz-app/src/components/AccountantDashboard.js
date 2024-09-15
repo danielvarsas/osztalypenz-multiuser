@@ -1,9 +1,10 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import '../App.css'; // Import the new CSS file
 
 const AccountantDashboard = () => {
   const navigate = useNavigate();
+  const { className } = useParams(); // Get the class name from the URL
 
   return (
     <div>
@@ -14,10 +15,10 @@ const AccountantDashboard = () => {
       
       {/* Button Container */}
       <div className="button-container">
-        <button className="big-button" onClick={() => navigate('/add-money')}>Befizetés</button>
-        <button className="take-money-button" onClick={() => navigate('/take-money')}>Kifizetés</button> {/* Updated class */}
-        <button className="small-button" onClick={() => navigate('/account-movements')}>Pénzmozgások</button>
-        <button className="small-button" onClick={() => navigate('/manage-children')}>Tanulók</button>
+        <button className="big-button" onClick={() => navigate(`/${className}/add-money`)}>Befizetés</button>
+        <button className="take-money-button" onClick={() => navigate(`/${className}/take-money`)}>Kifizetés</button> {/* Updated class */}
+        <button className="small-button" onClick={() => navigate(`/${className}/account-movements`)}>Pénzmozgások</button>
+        <button className="small-button" onClick={() => navigate(`/${className}/manage-children`)}>Tanulók</button>
       </div>
     </div>
   );

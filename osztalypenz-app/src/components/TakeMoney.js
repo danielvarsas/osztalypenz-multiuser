@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useParams } from 'react-router-dom'; // Import useParams to get className from URL
 import axios from 'axios';
 import '../App.css'; // Import the updated CSS file
 
 const TakeMoney = () => {
+  const { className } = useParams(); // Get the class name from the URL
   const [amount, setAmount] = useState('');
   const [reason, setReason] = useState('');
   const [message, setMessage] = useState('');
@@ -16,7 +18,8 @@ const TakeMoney = () => {
     }
 
     try {
-      const response = await axios.post('http://127.0.0.1:5000/take-money', { amount: amount, reason: reason });
+      // Send request to backend with dynamic URL
+      const response = await axios.post(`http://127.0.0.1:5000/${className}/take-money`, { amount: amount, reason: reason });
       setMessage(response.data.message);
     } catch (error) {
       setMessage('Error taking money');

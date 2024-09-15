@@ -6,17 +6,20 @@ import AddMoney from './components/AddMoney'; // Import AddMoney component
 import TakeMoney from './components/TakeMoney'; // Import TakeMoney component
 import AccountMovements from './components/AccountMovements'; // Import AccountMovements component
 import ManageChildren from './components/ManageChildren'; // Import ManageChildren component
+import AddClass from './components/AddClass'; // Import AddClass component
 
 const App = () => {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Dashboard />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/add-money" element={<AddMoney />} />
-        <Route path="/take-money" element={<TakeMoney />} />
-        <Route path="/account-movements" element={<AccountMovements />} />
-        <Route path="/manage-children" element={<ManageChildren />} />
+        <Route path="/add-class" element={<AddClass />} /> {/* Route for adding a new class */}
+
+        <Route path="/:className/dashboard" element={<Dashboard />} />
+        <Route path="/:className/manage-children" element={<ManageChildren />} />
+        <Route path="/:className/account-movements" element={<AccountMovements />} />
+        <Route path="/:className/add-money" element={<AddMoney />} />
+        <Route path="/:className/take-money" element={<TakeMoney />} />
       </Routes>
     </Router>
   );

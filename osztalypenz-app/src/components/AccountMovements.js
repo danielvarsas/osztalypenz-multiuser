@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom'; // Import useParams to get className from URL
 import axios from 'axios';
 import '../App.css'; // Import the new CSS file
 
 const AccountMovements = () => {
+  const { className } = useParams(); // Get the class name from the URL
   const [movements, setMovements] = useState([]);
   const [balance, setBalance] = useState(0); // State to store the balance
 
   useEffect(() => {
     const fetchMovements = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:5000/account-movements');
+        // Update the API endpoint to include the className
+        const response = await axios.get(`http://127.0.0.1:5000/${className}/account-movements`);
         setMovements(response.data);
 
         // Calculate the balance
@@ -26,7 +29,7 @@ const AccountMovements = () => {
     };
 
     fetchMovements();
-  }, []);
+  }, [className]); // Add className as a dependency to re-run when it changes
 
   // Function to determine the row background color
   const getRowStyle = (reason) => {

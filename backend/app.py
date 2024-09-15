@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, Blueprint
+from flask import Flask, request, jsonify, Blueprint, g
 import mysql.connector
 from flask_cors import CORS
 from dotenv import load_dotenv
@@ -26,9 +26,14 @@ db_config = {
 
 
 # Route to add money for a child
-@app.route('/add-money', methods=['POST'])
-def add_money():
+@app.route('/<class_name>/add-money', methods=['POST'])
+def add_money(class_name):
     try:
+        # Retrieve the connection to the correct database from Flask's global object
+        db = getattr(g, 'db', None)
+        if db is None:
+            return jsonify({'error': 'Database connection failed'}), 500
+        
         data = request.json
         print("Received data:", data)  # Debugging print statement
         child_id = data.get('child_id')
@@ -38,17 +43,15 @@ def add_money():
         if not child_id or not amount:
             return jsonify({'error': 'Add meg mindkét paramétert'}), 400
 
-        # Connect to the database
-        connection = mysql.connector.connect(**db_config)
-        cursor = connection.cursor()
+        # Use the existing database connection to insert the transaction
+        cursor = db.cursor()
 
         # Insert the transaction into the database
         query = "INSERT INTO transactions (child_id, amount, type) VALUES (%s, %s, 'add')"
         cursor.execute(query, (child_id, amount))
-        connection.commit()
+        db.commit()
 
         cursor.close()
-        connection.close()
         message = f"{amount} Befizetés könyvelve {child_name} tanulónak"
         return jsonify({'message': message}), 200 
 
@@ -57,9 +60,14 @@ def add_money():
         return jsonify({'error': str(e)}), 500
 
 # Route to take money
-@app.route('/take-money', methods=['POST'])
-def take_money():
+@app.route('/<class_name>/take-money', methods=['POST'])
+def take_money(class_name):
     try:
+        # Retrieve the database connection for the current class from Flask's global object
+        db = getattr(g, 'db', None)
+        if db is None:
+            return jsonify({'error': 'Database connection failed'}), 500
+
         data = request.json
         print("Received data:", data)  # Debugging print statement
         amount = data.get('amount')
@@ -70,19 +78,15 @@ def take_money():
             return jsonify({'error': 'Összeget és okot is adj'}), 400
 
         # Use the child_id for "Kivét"
-        child_id_of_kivet = 1  # Replace with the actual child_id of "Kivét"
+        child_id_of_kivet = 1  # Use the actual child_id of "Kivét"
 
-        # Connect to the database
-        connection = mysql.connector.connect(**db_config)
-        cursor = connection.cursor()
-
-        # Insert the transaction into the database with the specific child_id
+        # Use the existing database connection to insert the transaction
+        cursor = db.cursor()
         query = "INSERT INTO transactions (child_id, amount, reason, type) VALUES (%s, %s, %s, 'take')"
         cursor.execute(query, (child_id_of_kivet, amount, reason))
-        connection.commit()
+        db.commit()
 
         cursor.close()
-        connection.close()
 
         message = f"{amount} Kivétel iktatva, {reason} céllal."
         return jsonify({'message': message}), 200
@@ -91,13 +95,19 @@ def take_money():
         print("Error:", str(e))  # Print the error to the console
         return jsonify({'error': str(e)}), 500
 
+
+
 # Route to get account movements
-@app.route('/account-movements', methods=['GET'])
-def account_movements():
+@app.route('/<class_name>/account-movements', methods=['GET'])
+def account_movements(class_name):
     try:
-        # Connect to the database
-        connection = mysql.connector.connect(**db_config)
-        cursor = connection.cursor(dictionary=True)
+        # Retrieve the database connection for the current class from Flask's global object
+        db = getattr(g, 'db', None)
+        if db is None:
+            return jsonify({'error': 'Database connection failed'}), 500
+
+        # Use the existing database connection to fetch account movements
+        cursor = db.cursor(dictionary=True)
 
         # Fetch all transactions with child names
         query = """
@@ -111,7 +121,6 @@ def account_movements():
         result = cursor.fetchall()
 
         cursor.close()
-        connection.close()
 
         return jsonify(result), 200
 
@@ -119,12 +128,17 @@ def account_movements():
         print("Error:", str(e))  # Print the error to the console
         return jsonify({'error': str(e)}), 500
 
-@app.route('/children', methods=['GET'])
-def get_children():
+# Route to get children
+@app.route('/<class_name>/children', methods=['GET'])
+def get_children(class_name):
     try:
-        # Connect to the database
-        connection = mysql.connector.connect(**db_config)
-        cursor = connection.cursor(dictionary=True)
+        # Retrieve the database connection for the current class from Flask's global object
+        db = getattr(g, 'db', None)
+        if db is None:
+            return jsonify({'error': 'Database connection failed'}), 500
+
+        # Use the existing database connection to fetch children
+        cursor = db.cursor(dictionary=True)
 
         # Fetch all children
         query = "SELECT id, name FROM children"
@@ -132,7 +146,6 @@ def get_children():
         result = cursor.fetchall()
 
         cursor.close()
-        connection.close()
 
         return jsonify(result), 200
 
@@ -141,8 +154,8 @@ def get_children():
         return jsonify({'error': str(e)}), 500
 
 # Route to add a new child
-@app.route('/children', methods=['POST'])
-def add_child():
+@app.route('/<class_name>/children', methods=['POST'])
+def add_child(class_name):
     try:
         data = request.json
         child_name = data.get('name')
@@ -150,20 +163,23 @@ def add_child():
         if not child_name:
             return jsonify({'error': 'Adj nevet'}), 400
 
-        # Connect to the database
-        connection = mysql.connector.connect(**db_config)
-        cursor = connection.cursor()
+        # Retrieve the database connection for the current class from Flask's global object
+        db = getattr(g, 'db', None)
+        if db is None:
+            return jsonify({'error': 'Database connection failed'}), 500
+
+        # Use the existing database connection to insert a new child
+        cursor = db.cursor()
 
         # Insert the new child into the database
         query = "INSERT INTO children (name) VALUES (%s)"
         cursor.execute(query, (child_name,))
-        connection.commit()
+        db.commit()
 
         # Get the ID of the newly inserted child
         new_child_id = cursor.lastrowid
 
         cursor.close()
-        connection.close()
 
         # Return the newly created child's ID and name
         return jsonify({'id': new_child_id, 'name': child_name}), 200
@@ -173,8 +189,8 @@ def add_child():
         return jsonify({'error': str(e)}), 500
 
 # Route to modify an existing child's name
-@app.route('/children/<int:child_id>', methods=['PUT'])
-def modify_child(child_id):
+@app.route('/<class_name>/children/<int:child_id>', methods=['PUT'])
+def modify_child(class_name, child_id):
     try:
         data = request.json
         new_name = data.get('name')
@@ -182,17 +198,20 @@ def modify_child(child_id):
         if not new_name:
             return jsonify({'error': 'Adj nevet'}), 400
 
-        # Connect to the database
-        connection = mysql.connector.connect(**db_config)
-        cursor = connection.cursor()
+        # Retrieve the database connection for the current class from Flask's global object
+        db = getattr(g, 'db', None)
+        if db is None:
+            return jsonify({'error': 'Database connection failed'}), 500
+
+        # Use the existing database connection to update the child's name
+        cursor = db.cursor()
 
         # Update the child's name in the database
         query = "UPDATE children SET name = %s WHERE id = %s"
         cursor.execute(query, (new_name, child_id))
-        connection.commit()
+        db.commit()
 
         cursor.close()
-        connection.close()
 
         return jsonify({'message': 'Gyermek neve sikeresen frissítve'}), 200
 
@@ -201,20 +220,23 @@ def modify_child(child_id):
         return jsonify({'error': str(e)}), 500
 
 # Route to delete a child
-@app.route('/children/<int:child_id>', methods=['DELETE'])
-def delete_child(child_id):
+@app.route('/<class_name>/children/<int:child_id>', methods=['DELETE'])
+def delete_child(class_name, child_id):
     try:
-        # Connect to the database
-        connection = mysql.connector.connect(**db_config)
-        cursor = connection.cursor()
+        # Retrieve the database connection for the current class from Flask's global object
+        db = getattr(g, 'db', None)
+        if db is None:
+            return jsonify({'error': 'Database connection failed'}), 500
+
+        # Use the existing database connection to delete the child
+        cursor = db.cursor()
 
         # Delete the child from the database
         query = "DELETE FROM children WHERE id = %s"
         cursor.execute(query, (child_id,))
-        connection.commit()
+        db.commit()
 
         cursor.close()
-        connection.close()
 
         return jsonify({'message': 'Név sikeresen törölve a listából'}), 200
 
@@ -225,9 +247,14 @@ def delete_child(child_id):
 # Function to get child's name by ID
 def get_child_name_by_id(child_id):
     try:
-        # Establish the database connection
-        connection = mysql.connector.connect(**db_config)
-        cursor = connection.cursor(dictionary=True)
+        # Retrieve the database connection for the current class from Flask's global object
+        db = getattr(g, 'db', None)
+        if db is None:
+            print("Database connection failed.")
+            return 'Unknown'
+
+        # Use the existing database connection to fetch the child's name
+        cursor = db.cursor(dictionary=True)
 
         # Query to fetch the child's name by ID
         query = "SELECT name FROM children WHERE id = %s"
@@ -237,14 +264,13 @@ def get_child_name_by_id(child_id):
         # Return the child's name if found, otherwise return 'Unknown'
         return result['name'] if result else 'Unknown'
 
-    except Error as e:
+    except Exception as e:
         print(f"Error while connecting to MySQL: {e}")
         return 'Unknown'
-    
+
     finally:
-        if connection.is_connected():
+        if db and cursor:
             cursor.close()
-            connection.close()
 
 @app.before_request
 def before_request():
