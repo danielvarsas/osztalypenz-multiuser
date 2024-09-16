@@ -128,24 +128,23 @@ def account_movements(class_name):
         print("Error:", str(e))  # Print the error to the console
         return jsonify({'error': str(e)}), 500
 
-# Route to get children
 @app.route('/<class_name>/children', methods=['GET'])
 def get_children(class_name):
     try:
-        # Retrieve the database connection for the current class from Flask's global object
+        print(f"Fetching children for class: {class_name}")
         db = getattr(g, 'db', None)
         if db is None:
+            print("Database connection failed")
             return jsonify({'error': 'Database connection failed'}), 500
 
-        # Use the existing database connection to fetch children
         cursor = db.cursor(dictionary=True)
 
-        # Fetch all children
-        query = "SELECT id, name FROM children"
+        query = "SELECT id, name, isDeleted FROM children"
         cursor.execute(query)
         result = cursor.fetchall()
 
         cursor.close()
+        print("Fetched children:", result)
 
         return jsonify(result), 200
 
@@ -219,20 +218,18 @@ def modify_child(class_name, child_id):
         print("Error:", str(e))
         return jsonify({'error': str(e)}), 500
 
-# Route to delete a child
 @app.route('/<class_name>/children/<int:child_id>', methods=['DELETE'])
 def delete_child(class_name, child_id):
     try:
-        # Retrieve the database connection for the current class from Flask's global object
+        # Connect to the database dynamically using the class name
         db = getattr(g, 'db', None)
         if db is None:
             return jsonify({'error': 'Database connection failed'}), 500
 
-        # Use the existing database connection to delete the child
         cursor = db.cursor()
 
-        # Delete the child from the database
-        query = "DELETE FROM children WHERE id = %s"
+        # Perform a soft delete by setting the isDeleted flag to TRUE
+        query = "UPDATE children SET isDeleted = 1 WHERE id = %s"
         cursor.execute(query, (child_id,))
         db.commit()
 

@@ -13,16 +13,16 @@ const AddMoney = () => {
   useEffect(() => {
     const fetchChildren = async () => {
       try {
-        // Update the API endpoint to include the className
         const response = await axios.get(`http://127.0.0.1:5000/${className}/children`);
 
-        // Filter out the child with ID 1
-        const filteredChildren = response.data.filter((child) => child.id !== 1);
+        // Filter out the soft-deleted children (isDeleted = true) and child with ID 1
+        const filteredChildren = response.data.filter(
+          (child) => child.id !== 1 && !child.isDeleted
+        );
 
         setChildren(filteredChildren);
       } catch (error) {
         console.error('Error fetching children:', error);
-        setMessage('Error fetching children.');
       }
     };
 
@@ -43,6 +43,10 @@ const AddMoney = () => {
 
       // Set the message dynamically from the backend response
       setMessage(response.data.message);
+
+      // Reset the form fields after successful addition
+      setChildId(''); // Reset child selection to default
+      setAmount(''); // Clear amount input field
     } catch (error) {
       setMessage('Error adding money');
     }

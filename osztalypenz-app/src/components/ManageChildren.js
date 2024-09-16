@@ -16,10 +16,9 @@ const ManageChildren = () => {
       try {
         // Update the API endpoint to include the className
         const response = await axios.get(`http://127.0.0.1:5000/${className}/children`);
-
-        // Filter out the child with ID 1 (technical item)
-        const filteredChildren = response.data.filter((child) => child.id !== 1);
-
+	console.log(response.data);
+        // Filter out the child with ID 1 and those marked as deleted
+        const filteredChildren = response.data.filter((child) => child.id !== 1 && !child.isDeleted);
         setChildren(filteredChildren);
       } catch (error) {
         console.error('Error fetching children:', error);
@@ -40,7 +39,7 @@ const ManageChildren = () => {
     try {
       // Update the API endpoint to include the className
       const response = await axios.post(`http://127.0.0.1:5000/${className}/children`, { name: newChildName });
-      setChildren([...children, { id: response.data.id, name: newChildName }]); // Append the new child to the list
+      setChildren([...children, { id: response.data.id, name: newChildName, isDeleted: false }]); // Append the new child to the list
       setNewChildName('');
       setMessage('Child added successfully!');
     } catch (error) {

@@ -10,11 +10,13 @@ db_config_base = {
     'port': os.getenv('DB_PORT')
 }
 
+
 # SQL statements to create tables
 CREATE_CHILDREN_TABLE_SQL = """
 CREATE TABLE IF NOT EXISTS children (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL
+    name VARCHAR(255) NOT NULL,
+    isDeleted BOOLEAN DEFAULT FALSE  -- New column to mark soft deletion
 );
 """
 
