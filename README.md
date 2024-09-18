@@ -1,6 +1,3 @@
-# Create the README.md file with the provided content
-
-readme_content = """
 # Osztalype.nz 1.0 Beta
 
 ## Description
