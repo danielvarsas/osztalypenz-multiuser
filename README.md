@@ -139,27 +139,6 @@ The app should now be running at [http://localhost:3000](http://localhost:3000).
 
 ---
 
-## Known Issues
-
-- Ensure the MySQL container is running before starting the backend.
-- When adding money, the amount and student name reset after successful operation to avoid duplicate entries.
-
----
-
-## Future Enhancements
-
-- Add functionality for setting monthly payments.
-- Improve the transaction filtering by date range.
-- Integrate more detailed statistics and reporting for each class.
-
----
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
 ## Contributors
 
 - Your Name (your-email@example.com)
