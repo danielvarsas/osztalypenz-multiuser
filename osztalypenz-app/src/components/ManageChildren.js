@@ -10,7 +10,8 @@ const ManageChildren = () => {
   const [editingChild, setEditingChild] = useState(null);
   const [message, setMessage] = useState('');
   const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}:5000`;
-
+  console.log('API URL:', process.env.REACT_APP_API_URL);
+  console.log('API URL:', apiUrl);
   // Fetch the children data from the backend
   useEffect(() => {
     const fetchChildren = async () => {
@@ -39,7 +40,7 @@ const ManageChildren = () => {
 
     try {
       // Update the API endpoint to include the className
-      const response = await axios.post(`http://127.0.0.1:5000/${className}/children`, { name: newChildName });
+      const response = await axios.post(`${apiUrl}/${className}/children`, { name: newChildName });
       setChildren([...children, { id: response.data.id, name: newChildName, isDeleted: false }]); // Append the new child to the list
       setNewChildName('');
       setMessage('Child added successfully!');
@@ -53,7 +54,7 @@ const ManageChildren = () => {
   const handleDeleteChild = async (childId) => {
     try {
       // Update the API endpoint to include the className
-      await axios.delete(`http://127.0.0.1:5000/${className}/children/${childId}`);
+      await axios.delete(`${apiUrl}/${className}/children/${childId}`);
       setChildren(children.filter((child) => child.id !== childId)); // Remove the child from the list
       setMessage('Child deleted successfully!');
     } catch (error) {
@@ -71,7 +72,7 @@ const ManageChildren = () => {
 
     try {
       // Update the API endpoint to include the className
-      await axios.put(`http://127.0.0.1:5000/${className}/children/${child.id}`, { name: editingChild.name });
+      await axios.put(`${apiUrl}/${className}/children/${child.id}`, { name: editingChild.name });
       setChildren(children.map((c) => (c.id === child.id ? { ...c, name: editingChild.name } : c))); // Update the modified child in the list
       setEditingChild(null);
       setMessage('Child modified successfully!');

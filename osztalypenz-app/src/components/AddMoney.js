@@ -41,7 +41,7 @@ const AddMoney = () => {
 
     try {
       // Send request to backend with dynamic URL
-      const response = await axios.post(`http://127.0.0.1:5000/${className}/add-money`, { child_id: childId, amount: amount });
+      const response = await axios.post(`${apiUrl}/${className}/add-money`, { child_id: childId, amount: amount });
 
       // Set the message dynamically from the backend response
       setMessage(response.data.message);
