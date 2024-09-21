@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom'; // Import useParams to get className from URL
+import { useParams, useNavigate } from 'react-router-dom'; // Import useParams and useNavigate
 import axios from 'axios';
 import '../App.css'; // Import the updated CSS file
 
 const AddMoney = () => {
   const { className } = useParams(); // Get the class name from the URL
+  const navigate = useNavigate(); // Use navigate to handle redirection
   const [childId, setChildId] = useState('');
   const [amount, setAmount] = useState('');
   const [message, setMessage] = useState(''); // State to store the message
@@ -52,6 +53,10 @@ const AddMoney = () => {
     }
   };
 
+  const handleBackToDashboard = () => {
+    navigate(`/${className}/dashboard`); // Navigate back to the dashboard
+  };
+
   return (
     <div className="money-container">
       <h2>Befizetés</h2>
@@ -83,6 +88,12 @@ const AddMoney = () => {
         Befizetés
       </button>
       {message && <p>{message}</p>} {/* Display the message dynamically */}
+      <button 
+        className="back-to-dashboard-button" 
+        onClick={handleBackToDashboard}
+      >
+        Vissza a menübe
+      </button>
     </div>
   );
 };

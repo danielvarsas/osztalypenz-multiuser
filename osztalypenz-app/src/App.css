@@ -5,6 +5,11 @@ body {
   font-family: Arial, sans-serif;
 }
 
+h1 {
+  text-align: center;
+  color: #e3e3e3;
+}
+
 /* Header styles */
 .app-header {
   background-color: #2f5061;
@@ -163,7 +168,17 @@ body {
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
-
+.back-to-dashboard-button {
+  height: 48px; /* Match the height of the dropdown */
+  background-color: #2f5061; /* Use the grey color from the dashboard */
+  color: #fff; /* White text color */
+  border: none;
+  margin-top: 10px;
+  width: 30%;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer; /* Add pointer cursor */
+}
 /* Responsive design for mobile */
 @media (max-width: 768px) {
   .button-container {

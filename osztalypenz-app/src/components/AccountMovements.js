@@ -12,7 +12,7 @@ const AccountMovements = () => {
     const fetchMovements = async () => {
       try {
         // Update the API endpoint to include the className
-        const response = await axios.get(`http://127.0.0.1:5000/${className}/account-movements`);
+        const response = await axios.get(`http://backend_container:5000/${className}/account-movements`);
         setMovements(response.data);
 
         // Calculate the balance
