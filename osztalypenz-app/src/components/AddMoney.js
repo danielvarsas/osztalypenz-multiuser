@@ -10,11 +10,12 @@ const AddMoney = () => {
   const [amount, setAmount] = useState('');
   const [message, setMessage] = useState(''); // State to store the message
   const [children, setChildren] = useState([]);
+  const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}:5000`;
 
   useEffect(() => {
     const fetchChildren = async () => {
       try {
-        const response = await axios.get(`http://127.0.0.1:5000/${className}/children`);
+        const response = await axios.get(`${apiUrl}/${className}/children`);
 
         // Filter out the soft-deleted children (isDeleted = true) and child with ID 1
         const filteredChildren = response.data.filter(

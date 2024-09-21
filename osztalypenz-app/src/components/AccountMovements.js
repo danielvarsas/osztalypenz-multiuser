@@ -8,11 +8,14 @@ const AccountMovements = () => {
   const [movements, setMovements] = useState([]);
   const [balance, setBalance] = useState(0); // State to store the balance
 
+  const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}:5000`;
+
+
   useEffect(() => {
     const fetchMovements = async () => {
       try {
         // Update the API endpoint to include the className
-        const response = await axios.get(`http://backend_container:5000/${className}/account-movements`);
+        const response = await axios.get(`${apiUrl}/${className}/account-movements`);
         setMovements(response.data);
 
         // Calculate the balance

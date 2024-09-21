@@ -9,13 +9,14 @@ const ManageChildren = () => {
   const [newChildName, setNewChildName] = useState('');
   const [editingChild, setEditingChild] = useState(null);
   const [message, setMessage] = useState('');
+  const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}:5000`;
 
   // Fetch the children data from the backend
   useEffect(() => {
     const fetchChildren = async () => {
       try {
         // Update the API endpoint to include the className
-        const response = await axios.get(`http://127.0.0.1:5000/${className}/children`);
+        const response = await axios.get(`${apiUrl}/${className}/children`);
 	console.log(response.data);
         // Filter out the child with ID 1 and those marked as deleted
         const filteredChildren = response.data.filter((child) => child.id !== 1 && !child.isDeleted);

@@ -5,7 +5,7 @@ import '../App.css'; // Import the new CSS file
 const AccountantDashboard = () => {
   const navigate = useNavigate();
   const { className } = useParams(); // Get the class name from the URL
-
+  
   return (
     <div>
       {/* Header Section */}

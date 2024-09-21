@@ -6,6 +6,7 @@ from mysql.connector import Error
 import os
 from auth import auth_bp  # Import the auth_bp Blueprint from auth.py
 from newclass import get_db_connection, create_class_db  # Import the required functions
+from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
@@ -298,4 +299,4 @@ def create_class():
     return jsonify(result), 201
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

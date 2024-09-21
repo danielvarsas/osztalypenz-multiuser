@@ -9,6 +9,8 @@ const TakeMoney = () => {
   const [reason, setReason] = useState('');
   const [message, setMessage] = useState('');
   const navigate = useNavigate(); // Use navigate to handle redirection
+  const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}:5000`;
+
   const handleTakeMoney = async () => {
     setMessage('');
 
@@ -19,7 +21,7 @@ const TakeMoney = () => {
 
     try {
       // Send request to backend with dynamic URL
-      const response = await axios.post(`http://127.0.0.1:5000/${className}/take-money`, { amount: amount, reason: reason });
+      const response = await axios.post(`${apiUrl}/${className}/take-money`, { amount: amount, reason: reason });
       setMessage(response.data.message);
     } catch (error) {
       setMessage('Error taking money');

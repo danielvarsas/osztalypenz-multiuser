@@ -4,6 +4,7 @@ import axios from 'axios';
 const AddClass = () => {
   const [className, setClassName] = useState('');  // State to store the class name
   const [message, setMessage] = useState('');      // State to store success/error messages
+  const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}:5000`;
 
   // Function to handle the form submission
   const handleAddClass = () => {
@@ -13,7 +14,7 @@ const AddClass = () => {
     }
 
     // Make a POST request to the backend to create a new class
-    axios.post('http://127.0.0.1:5000/create-class', { class_name: className })
+    axios.post(`${apiUrl}/create-class`, { class_name: className })
       .then((response) => {
         setMessage(response.data.message || 'Class created successfully!');
       })
