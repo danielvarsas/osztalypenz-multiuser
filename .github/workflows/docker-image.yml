@@ -32,8 +32,8 @@ jobs:
       - name: Build and push frontend image
         uses: docker/build-push-action@v3
         with:
-          context: ./frontend
-          file: ./frontend/Dockerfile
+          context: ./osztalypenz-app
+          file: ./osztalypenz-app/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/osztalypenz_frontend:latest
 
