@@ -10,7 +10,6 @@ on:
 
 jobs:
   build-frontend:
-    if: "github.event_name == 'push' && github.event.paths_any == 'osztalypenz-app/**'"
     runs-on: ubuntu-latest
     environment: osztalypenz
     name: Build and Push Frontend Docker Image
@@ -28,7 +27,6 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Build and push frontend image
       - name: Build and push frontend image
         uses: docker/build-push-action@v3
         with:
@@ -38,7 +36,6 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/osztalypenz_frontend:latest
 
   build-backend:
-    if: "github.event_name == 'push' && github.event.paths_any == 'backend/**'"
     runs-on: ubuntu-latest
     environment: osztalypenz
     name: Build and Push Backend Docker Image
@@ -56,7 +53,6 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Build and push backend image
       - name: Build and push backend image
         uses: docker/build-push-action@v3
         with:
