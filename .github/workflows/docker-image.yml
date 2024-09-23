@@ -10,7 +10,7 @@ on:
 
 jobs:
   build-frontend:
-    if: "contains(github.event.head_commit.message, 'osztalypenz-app') || github.event.paths_any == 'osztalypenz-app/**'"
+    if: "github.event_name == 'push' && github.event.paths_any == 'osztalypenz-app/**'"
     runs-on: ubuntu-latest
     environment: osztalypenz
     name: Build and Push Frontend Docker Image
@@ -38,7 +38,7 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/osztalypenz_frontend:latest
 
   build-backend:
-    if: "contains(github.event.head_commit.message, 'backend') || github.event.paths_any == 'backend/**'"
+    if: "github.event_name == 'push' && github.event.paths_any == 'backend/**'"
     runs-on: ubuntu-latest
     environment: osztalypenz
     name: Build and Push Backend Docker Image

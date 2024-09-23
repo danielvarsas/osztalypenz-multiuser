@@ -270,6 +270,18 @@ def get_child_name_by_id(child_id):
         if db and cursor:
             cursor.close()
 
+@app.route('/<class_name>/student/<int:student_id>/account-movements', methods=['GET'])
+def get_student_account_movements(class_name, student_id):
+    db = get_db_connection(class_name)
+    cursor = db.cursor(dictionary=True)
+    
+    query = "SELECT * FROM transactions WHERE child_id = %s"
+    cursor.execute(query, (student_id,))
+    result = cursor.fetchall()
+
+    cursor.close()
+    return jsonify(result), 200
+
 @app.before_request
 def before_request():
     path_parts = request.path.split('/')
