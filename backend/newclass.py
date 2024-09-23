@@ -16,7 +16,8 @@ CREATE_CHILDREN_TABLE_SQL = """
 CREATE TABLE IF NOT EXISTS children (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    isDeleted BOOLEAN DEFAULT FALSE  -- New column to mark soft deletion
+    url_name VARCHAR(255) NOT NULL,  -- Column for URL-friendly name
+    isDeleted BOOLEAN DEFAULT FALSE  -- Column to mark soft deletion
 );
 """
 

@@ -7,6 +7,7 @@ import os
 from auth import auth_bp  # Import the auth_bp Blueprint from auth.py
 from newclass import get_db_connection, create_class_db  # Import the required functions
 from dotenv import load_dotenv
+import unidecode
 
 # Load environment variables from .env file
 load_dotenv()
@@ -24,6 +25,17 @@ db_config = {
     'port': os.getenv('DB_PORT'),  # Include the port from the .env file
     'database': os.getenv('DB_NAME')
 }
+
+
+@app.before_request
+def before_request():
+    class_name = request.view_args.get('class_name')  # Get the class_name from the route arguments
+    if class_name:
+        db = get_db_connection(class_name)
+        if db:
+            g.db = db
+        else:
+            print("Failed to connect to the database.")
 
 
 # Route to add money for a child
@@ -153,7 +165,13 @@ def get_children(class_name):
         print("Error:", str(e))  # Print the error to the console
         return jsonify({'error': str(e)}), 500
 
-# Route to add a new child
+# Function to generate url_name from the student's name
+def generate_url_name(student_name):
+    url_name = unidecode.unidecode(student_name.lower())  # Convert to lowercase and remove accents
+    url_name = url_name.replace(' ', '-')  # Replace spaces with dashes
+    return url_name
+
+# Route to add a new child with `url_name`
 @app.route('/<class_name>/children', methods=['POST'])
 def add_child(class_name):
     try:
@@ -163,26 +181,25 @@ def add_child(class_name):
         if not child_name:
             return jsonify({'error': 'Adj nevet'}), 400
 
-        # Retrieve the database connection for the current class from Flask's global object
+        # Generate the `url_name`
+        url_name = generate_url_name(child_name)
+
+        # Connect to the database
         db = getattr(g, 'db', None)
         if db is None:
             return jsonify({'error': 'Database connection failed'}), 500
 
-        # Use the existing database connection to insert a new child
         cursor = db.cursor()
 
-        # Insert the new child into the database
-        query = "INSERT INTO children (name) VALUES (%s)"
-        cursor.execute(query, (child_name,))
+        # Insert the new child with `url_name`
+        query = "INSERT INTO children (name, url_name) VALUES (%s, %s)"
+        cursor.execute(query, (child_name, url_name))
         db.commit()
-
-        # Get the ID of the newly inserted child
-        new_child_id = cursor.lastrowid
 
         cursor.close()
 
-        # Return the newly created child's ID and name
-        return jsonify({'id': new_child_id, 'name': child_name}), 200
+        # Return the newly created child's ID and `url_name`
+        return jsonify({'id': cursor.lastrowid, 'name': child_name, 'url_name': url_name}), 200
 
     except Exception as e:
         print("Error:", str(e))
@@ -270,31 +287,6 @@ def get_child_name_by_id(child_id):
         if db and cursor:
             cursor.close()
 
-@app.route('/<class_name>/student/<int:student_id>/account-movements', methods=['GET'])
-def get_student_account_movements(class_name, student_id):
-    db = get_db_connection(class_name)
-    cursor = db.cursor(dictionary=True)
-    
-    query = "SELECT * FROM transactions WHERE child_id = %s"
-    cursor.execute(query, (student_id,))
-    result = cursor.fetchall()
-
-    cursor.close()
-    return jsonify(result), 200
-
-@app.before_request
-def before_request():
-    path_parts = request.path.split('/')
-    if len(path_parts) > 1:
-        class_name = path_parts[1]  # Extract the class name from the path
-        g.db = get_db_connection(class_name)
-
-@app.teardown_request
-def teardown_request(exception):
-    db = getattr(g, 'db', None)
-    if db is not None:
-        db.close()
-
 # Endpoint to create a new class
 @app.route('/create-class', methods=['POST'])
 def create_class():
@@ -309,6 +301,46 @@ def create_class():
     if 'error' in result:
         return jsonify(result), 500
     return jsonify(result), 201
+
+@app.route('/<class_name>/<url_name>/account-movements', methods=['GET'])
+def get_student_account_movements(class_name, url_name):
+    try:
+        # Retrieve the database connection for the current class
+        db = getattr(g, 'db', None)
+        if db is None:
+            return jsonify({'error': 'Database connection failed'}), 500
+
+        # Use the existing database connection to fetch student movements
+        cursor = db.cursor(dictionary=True)
+
+        # Fetch student ID using the url_name
+        query = "SELECT id FROM children WHERE url_name = %s"
+        cursor.execute(query, (url_name,))
+        student = cursor.fetchone()
+
+        # If the student is not found, return an error
+        if not student:
+            return jsonify({'error': 'Student not found'}), 404
+
+        student_id = student['id']
+
+        # Fetch all account movements for the student
+        query = """
+        SELECT transactions.id, transactions.amount, transactions.reason, transactions.type, transactions.created_at 
+        FROM transactions
+        WHERE transactions.child_id = %s
+        ORDER BY transactions.created_at DESC
+        """
+        cursor.execute(query, (student_id,))
+        movements = cursor.fetchall()
+
+        cursor.close()
+
+        return jsonify(movements), 200
+
+    except Exception as e:
+        print("Error fetching account movements:", str(e))  # Print the error to the console
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

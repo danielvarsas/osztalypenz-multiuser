@@ -21,6 +21,7 @@ const App = () => {
         <Route path="/:className/account-movements" element={<AccountMovements />} />
         <Route path="/:className/add-money" element={<AddMoney />} />
         <Route path="/:className/take-money" element={<TakeMoney />} />
+        <Route path="/:className/:url_name" element={<StudentAccountMovements />} />
       </Routes>
     </Router>
   );
