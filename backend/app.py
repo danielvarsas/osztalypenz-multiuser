@@ -259,6 +259,32 @@ def delete_child(class_name, child_id):
         print("Error:", str(e))
         return jsonify({'error': str(e)}), 500
 
+@app.route('/delete-class/<class_name>', methods=['DELETE'])
+def delete_class_database(class_name):
+    try:
+        # Dynamically build the database name
+        db_name = f"{class_name}_db"
+
+        # Retrieve the main database connection from Flask's global object
+        db = getattr(g, 'db', None)
+        if db is None:
+            return jsonify({'error': 'Database connection failed'}), 500
+
+        cursor = db.cursor()
+
+        # Safely drop the database for the given class_name
+        cursor.execute(f"DROP DATABASE IF EXISTS `{db_name}`;")
+        db.commit()
+
+        cursor.close()
+
+        return jsonify({'message': f"Class database '{db_name}' deleted successfully!"}), 200
+
+    except Exception as e:
+        print(f"Error deleting class database: {e}")
+        return jsonify({'error': f"Failed to delete class '{class_name}' database."}), 500
+
+
 # Function to get child's name by ID
 def get_child_name_by_id(child_id):
     try:
@@ -342,5 +368,9 @@ def get_student_account_movements(class_name, url_name):
         print("Error fetching account movements:", str(e))  # Print the error to the console
         return jsonify({'error': str(e)}), 500
 
+
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
+
