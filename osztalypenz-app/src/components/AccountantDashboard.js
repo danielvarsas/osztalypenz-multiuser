@@ -11,24 +11,28 @@ const AccountantDashboard = () => {
 
   const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}:5000`;
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Example API request to validate if the class exists
-        const response = await axios.get(`${apiUrl}/${className}/account-movements`);
-        setData(response.data);
-      } catch (error) {
-        // Check if the error status is 404 and redirect to 404 page
-        if (error.response && error.response.status === 404) {
-          navigate('/404'); // Redirect to the 404 page
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      // Example API request to validate if the class exists
+      const response = await axios.get(`${apiUrl}/${className}/account-movements`);
+      setData(response.data);
+    } catch (error) {
+      // Check if the error is a 500 (internal server error) or 404
+      if (error.response) {
+        if (error.response.status === 500 || error.response.status === 404) {
+          navigate('/404'); // Redirect to the 404 page on either 500 or 404 error
         } else {
           setError('An error occurred. Please try again.');
         }
+      } else {
+        setError('An error occurred. Please try again.');
       }
-    };
+    }
+  };
 
-    fetchData();
-  }, [className, navigate, apiUrl]);
+  fetchData();
+}, [className, navigate, apiUrl]);
 
   if (error) {
     return <p>{error}</p>;
