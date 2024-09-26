@@ -8,6 +8,8 @@ import AccountMovements from './components/AccountMovements'; // Import AccountM
 import ManageChildren from './components/ManageChildren'; // Import ManageChildren component
 import AddClass from './components/AddClass'; // Import AddClass component
 import StudentAccountMovements from './components/StudentAccountMovements'; // Adjust the path according to your folder structure
+import NotFoundPage from './components/NotFoundPage'; 
+
 
 const App = () => {
   return (
@@ -16,6 +18,8 @@ const App = () => {
         <Route path="/" element={<Dashboard />} />
         <Route path="/add-class" element={<AddClass />} /> {/* Route for adding a new class */}
         <Route path="/:className/student/:studentId" element={<StudentAccountMovements />} />
+        <Route path="/404" element={<NotFoundPage />} />
+        {/*  <Route path="*" element={<NotFoundPage />} /> {/* Catch-all route for non-existing URLs */}
         <Route path="/:className/dashboard" element={<Dashboard />} />
         <Route path="/:className/manage-children" element={<ManageChildren />} />
         <Route path="/:className/account-movements" element={<AccountMovements />} />
