@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS children (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     url_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255),
     isDeleted BOOLEAN DEFAULT FALSE
 );
 """
@@ -48,6 +49,15 @@ CREATE TABLE IF NOT EXISTS transactions (
     type ENUM('add', 'take') NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (child_id) REFERENCES children(id)
+);
+"""
+
+CREATE_CLASS_ADMINS_TABLE_SQL = """
+CREATE TABLE IF NOT EXISTS class_admins (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    class_name VARCHAR(255) NOT NULL UNIQUE,
+    admin_email VARCHAR(255) NOT NULL,
+    pin_code VARCHAR(10) NOT NULL
 );
 """
 
@@ -72,12 +82,24 @@ def get_db_connection(subdomain, create_if_not_exists=True):
     except Error as e:
         print(f"Error connecting to MySQL database: {e}")
         return None
+        
+def initialize_main_database():
+    try:
+        connection = mysql.connector.connect(**db_config_default)  # Connect to the main database
+        cursor = connection.cursor()
+        cursor.execute(CREATE_CLASS_ADMINS_TABLE_SQL)
+        connection.commit()
+        cursor.close()
+        connection.close()
+    except Error as e:
+        print(f"Error initializing the main database: {e}")
 
 def initialize_database(connection):
     try:
         cursor = connection.cursor()
         cursor.execute(CREATE_CHILDREN_TABLE_SQL)
         cursor.execute(CREATE_TRANSACTIONS_TABLE_SQL)
+        cursor.execute(CREATE_CLASS_ADMINS_TABLE_SQL)  # Add this table creation
         connection.commit()
         cursor.close()
     except Error as e:
@@ -101,16 +123,29 @@ def before_request():
             return jsonify({'error': 'Main database connection failed'}), 500
 
 
-# Endpoint to create a new class
+# Endpoint to create a new class with PIN and Admin Email
 @app.route('/create-class', methods=['POST'])
 def create_class():
     data = request.get_json()
     class_name = data.get('class_name')
+    admin_email = data.get('admin_email')
+    pin_code = data.get('pin_code')
 
-    if not class_name:
-        return jsonify({'error': 'Class name is required'}), 400
+    if not class_name or not admin_email or not pin_code:
+        return jsonify({'error': 'Class name, email, and PIN are required'}), 400
 
     try:
+        # Step 1: Connect to the main database and check if the class already exists
+        connection = mysql.connector.connect(**db_config_default)
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT class_name FROM class_admins WHERE class_name = %s", (class_name,))
+        existing_class = cursor.fetchone()
+
+        if existing_class:
+            return jsonify({'error': 'Class name already exists'}), 400
+
+        # Step 2: Create the new class database
         connection = mysql.connector.connect(**db_config_base)
         cursor = connection.cursor()
         db_name = f"{class_name.lower()}_db"
@@ -118,33 +153,73 @@ def create_class():
         cursor.close()
         connection.close()
 
+        # Step 3: Initialize the new class database
         connection = mysql.connector.connect(database=db_name, **db_config_base)
         initialize_database(connection)
 
-        # Automatically insert the "kivét" child with ID 1
+        # Step 4: Insert class admin info into class_admins table
         cursor = connection.cursor()
-        cursor.execute("INSERT INTO children (id, name, url_name) VALUES (1, 'kivét', 'kivet')")
+        cursor.execute("INSERT INTO class_admins (class_name, admin_email, pin_code) VALUES (%s, %s, %s)", (class_name, admin_email, pin_code))
         connection.commit()
+
+        # Step 5: Insert the "kivét" child only if it doesn't exist
+        cursor.execute("SELECT id FROM children WHERE id = 1")
+        kivet_child = cursor.fetchone()
+
+        if not kivet_child:
+            cursor.execute("INSERT INTO children (id, name, url_name) VALUES (1, 'kivét', 'kivet')")
+            connection.commit()
+
         cursor.close()
         connection.close()
 
         return jsonify({'success': True, 'message': f"Class '{class_name}' created successfully!"}), 201
 
     except Error as e:
-        return jsonify({'error': 'Failed to create class'}), 500
+        return jsonify({'error': f"Failed to create class: {e}"}), 500
 
 
-# Get classes
+
+# Route to modify admin email and/or PIN for a class
+@app.route('/update-class-admin', methods=['PUT'])
+def update_class_admin():
+    data = request.get_json()
+    class_name = data.get('class_name')
+    new_email = data.get('admin_email')
+
+    if not class_name or not new_email:
+        return jsonify({'error': 'Class name and new admin email are required'}), 400
+
+    try:
+        # Connect to the main database
+        connection = mysql.connector.connect(**db_config_default)
+        cursor = connection.cursor()
+
+        # Update the admin email for the specified class
+        cursor.execute("UPDATE class_admins SET admin_email = %s WHERE class_name = %s", (new_email, class_name))
+        connection.commit()
+
+        cursor.close()
+        connection.close()
+
+        return jsonify({'message': f"Admin email for class '{class_name}' updated successfully!"}), 200
+
+    except Error as e:
+        print(f"Error updating admin email: {e}")
+        return jsonify({'error': f"Failed to update admin email: {e}"}), 500
+
+
+
+# Get classes including admin email
 @app.route('/classes', methods=['GET'])
 def get_classes():
     try:
-        db = getattr(g, 'db', None)
-        cursor = db.cursor()
-        cursor.execute("SHOW DATABASES LIKE '%_db';")
-        databases = cursor.fetchall()
-        class_names = [db[0].replace('_db', '') for db in databases]
+        connection = mysql.connector.connect(**db_config_default)
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT class_name, admin_email FROM class_admins;")
+        result = cursor.fetchall()
         cursor.close()
-        return jsonify(class_names), 200
+        return jsonify(result), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -173,40 +248,54 @@ def get_children(class_name):
     try:
         db = getattr(g, 'db', None)
         cursor = db.cursor(dictionary=True)
-        cursor.execute("SELECT id, name, isDeleted FROM children")
+        
+        # Fetching the 'id', 'name', 'email', and 'isDeleted' fields
+        cursor.execute("SELECT id, name, email, isDeleted FROM children")
         result = cursor.fetchall()
         cursor.close()
+
         return jsonify(result), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# Add child
+
+# Add child with email
 @app.route('/<class_name>/children', methods=['POST'])
 def add_child(class_name):
     try:
         data = request.json
         child_name = data.get('name')
+        email = data.get('email')  # Capture email from the request
+
         url_name = unidecode.unidecode(child_name.lower()).replace(' ', '-')
         db = getattr(g, 'db', None)
         cursor = db.cursor()
-        cursor.execute("INSERT INTO children (name, url_name) VALUES (%s, %s)", (child_name, url_name))
+
+        # Insert the new child with name and email
+        cursor.execute("INSERT INTO children (name, url_name, email) VALUES (%s, %s, %s)", (child_name, url_name, email))
         db.commit()
         cursor.close()
-        return jsonify({'id': cursor.lastrowid, 'name': child_name, 'url_name': url_name}), 200
+
+        return jsonify({'id': cursor.lastrowid, 'name': child_name, 'url_name': url_name, 'email': email}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# Route to modify an existing child
+# Modify child with email
 @app.route('/<class_name>/children/<int:child_id>', methods=['PUT'])
 def modify_child(class_name, child_id):
     try:
         data = request.json
         new_name = data.get('name')
+        email = data.get('email')  # Capture email for modification
+
         db = getattr(g, 'db', None)
         cursor = db.cursor()
-        cursor.execute("UPDATE children SET name = %s WHERE id = %s", (new_name, child_id))
+
+        # Update the child's name and email
+        cursor.execute("UPDATE children SET name = %s, email = %s WHERE id = %s", (new_name, email, child_id))
         db.commit()
         cursor.close()
+
         return jsonify({'message': 'Child updated successfully'}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -334,6 +423,7 @@ def get_child_name_by_id(child_id):
     finally:
         if db and cursor:
             cursor.close()
+
 # Route to take money
 @app.route('/<class_name>/take-money', methods=['POST'])
 def take_money(class_name):

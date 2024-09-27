@@ -1,25 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom'; // Import useParams to get className from URL
+import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import './ManageChildren.css'; // Import a CSS file for styles
+import './ManageChildren.css'; 
 
 const ManageChildren = () => {
-  const { className } = useParams(); // Get the class name from the URL
+  const { className } = useParams();
   const [children, setChildren] = useState([]);
   const [newChildName, setNewChildName] = useState('');
+  const [newChildEmail, setNewChildEmail] = useState('');  // New state for email
   const [editingChild, setEditingChild] = useState(null);
   const [message, setMessage] = useState('');
   const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}:5000`;
-  console.log('API URL:', process.env.REACT_APP_API_URL);
-  console.log('API URL:', apiUrl);
-  // Fetch the children data from the backend
+
   useEffect(() => {
     const fetchChildren = async () => {
       try {
-        // Update the API endpoint to include the className
         const response = await axios.get(`${apiUrl}/${className}/children`);
-	console.log(response.data);
-        // Filter out the child with ID 1 and those marked as deleted
         const filteredChildren = response.data.filter((child) => child.id !== 1 && !child.isDeleted);
         setChildren(filteredChildren);
       } catch (error) {
@@ -29,20 +25,19 @@ const ManageChildren = () => {
     };
 
     fetchChildren();
-  }, [className]); // Add className as a dependency to re-run when it changes
+  }, [className]);
 
-  // Function to handle adding a child
   const handleAddChild = async () => {
-    if (!newChildName) {
-      setMessage('Child name is required.');
+    if (!newChildName || !newChildEmail) {
+      setMessage('Child name and email are required.');
       return;
     }
 
     try {
-      // Update the API endpoint to include the className
-      const response = await axios.post(`${apiUrl}/${className}/children`, { name: newChildName });
-      setChildren([...children, { id: response.data.id, name: newChildName, isDeleted: false }]); // Append the new child to the list
+      const response = await axios.post(`${apiUrl}/${className}/children`, { name: newChildName, email: newChildEmail });
+      setChildren([...children, { id: response.data.id, name: newChildName, email: newChildEmail, isDeleted: false }]);
       setNewChildName('');
+      setNewChildEmail('');  // Clear email input after adding
       setMessage('Child added successfully!');
     } catch (error) {
       console.error('Error adding child:', error);
@@ -50,12 +45,10 @@ const ManageChildren = () => {
     }
   };
 
-  // Function to handle deleting a child
   const handleDeleteChild = async (childId) => {
     try {
-      // Update the API endpoint to include the className
       await axios.delete(`${apiUrl}/${className}/children/${childId}`);
-      setChildren(children.filter((child) => child.id !== childId)); // Remove the child from the list
+      setChildren(children.filter((child) => child.id !== childId));
       setMessage('Child deleted successfully!');
     } catch (error) {
       console.error('Error deleting child:', error);
@@ -63,17 +56,15 @@ const ManageChildren = () => {
     }
   };
 
-  // Function to handle modifying a child
   const handleModifyChild = async (child) => {
-    if (!editingChild || editingChild.name.trim() === '') {
-      setMessage('Child name is required.');
+    if (!editingChild || editingChild.name.trim() === '' || editingChild.email.trim() === '') {
+      setMessage('Child name and email are required.');
       return;
     }
 
     try {
-      // Update the API endpoint to include the className
-      await axios.put(`${apiUrl}/${className}/children/${child.id}`, { name: editingChild.name });
-      setChildren(children.map((c) => (c.id === child.id ? { ...c, name: editingChild.name } : c))); // Update the modified child in the list
+      await axios.put(`${apiUrl}/${className}/children/${child.id}`, { name: editingChild.name, email: editingChild.email });
+      setChildren(children.map((c) => (c.id === child.id ? { ...c, name: editingChild.name, email: editingChild.email } : c)));
       setEditingChild(null);
       setMessage('Child modified successfully!');
     } catch (error) {
@@ -82,7 +73,6 @@ const ManageChildren = () => {
     }
   };
 
-  // Function to handle clicking on the "Modify" button
   const handleEditClick = (child) => {
     setEditingChild(child);
     setMessage('');
@@ -97,14 +87,25 @@ const ManageChildren = () => {
         {children.map((child) => (
           <li key={child.id} className="child-item">
             {editingChild && editingChild.id === child.id ? (
-              <input
-                type="text"
-                className="child-input"
-                value={editingChild.name}
-                onChange={(e) => setEditingChild({ ...editingChild, name: e.target.value })}
-              />
+              <>
+                <input
+                  type="text"
+                  className="child-input"
+                  value={editingChild.name}
+                  onChange={(e) => setEditingChild({ ...editingChild, name: e.target.value })}
+                />
+                <input
+                  type="email"
+                  className="child-input"
+                  value={editingChild.email}
+                  onChange={(e) => setEditingChild({ ...editingChild, email: e.target.value })}
+                />
+              </>
             ) : (
-              <span className="child-name">{child.name}</span>
+              <>
+                <span className="child-name">{child.name}</span>
+                <span className="child-email">{child.email}</span>
+              </>
             )}
             {editingChild && editingChild.id === child.id ? (
               <button className="btn save-btn" onClick={() => handleModifyChild(child)}>Mentés</button>
@@ -118,7 +119,6 @@ const ManageChildren = () => {
         ))}
       </ul>
 
-      {/* Add new child section */}
       <div className="add-child-section">
         <input
           type="text"
@@ -126,6 +126,13 @@ const ManageChildren = () => {
           value={newChildName}
           className="new-child-input"
           onChange={(e) => setNewChildName(e.target.value)}
+        />
+        <input
+          type="email"
+          placeholder="Tanuló email"
+          value={newChildEmail}
+          className="new-child-input"
+          onChange={(e) => setNewChildEmail(e.target.value)}
         />
         <button className="btn add-btn" onClick={handleAddChild}>Hozzáadás</button>
       </div>
