@@ -42,7 +42,7 @@ useEffect(() => {
     <div>
       {/* Header Section */}
       <header className="app-header">
-        <h1>{className} Dashboard</h1>
+        <h1>{className} Dashboard 1.1</h1>
       </header>
 
       {/* Render class data or some UI */}
