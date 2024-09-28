@@ -15,7 +15,8 @@ const AddClass = () => {
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const response = await axios.get(`${apiUrl}/classes`);
+        // const response = await axios.get(`${apiUrl}/classes`);
+        const response = await axios.get(`api/classes`);
         setClasses(response.data); // Set fetched classes
       } catch (error) {
         console.error('Error fetching classes:', error);

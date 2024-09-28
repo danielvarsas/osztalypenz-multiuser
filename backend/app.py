@@ -217,6 +217,7 @@ def get_classes():
         connection = mysql.connector.connect(**db_config_default)
         print("Database connection established")  # Debugging line
         cursor = connection.cursor(dictionary=True)
+        print("Getting class names..") 
         cursor.execute("SELECT class_name, admin_email FROM class_admins;")
         result = cursor.fetchall()
         cursor.close()
