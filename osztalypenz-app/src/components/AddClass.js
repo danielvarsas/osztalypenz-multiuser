@@ -9,7 +9,7 @@ const AddClass = () => {
   const [classes, setClasses] = useState([]); // State to store class list
   const [editingClass, setEditingClass] = useState(null); // State to store the class being edited
   const [newEmail, setNewEmail] = useState(''); // State to store the new email being edited
-  const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}:5000/api`;
+  const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}/api`;
 
   // Fetch classes when the component mounts
   useEffect(() => {
