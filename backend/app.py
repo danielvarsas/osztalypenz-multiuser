@@ -215,16 +215,18 @@ def update_class_admin():
 def get_classes():
     try:
         connection = mysql.connector.connect(**db_config_default)
+        print("Database connection established")  # Debugging line
         cursor = connection.cursor(dictionary=True)
         cursor.execute("SELECT class_name, admin_email FROM class_admins;")
         result = cursor.fetchall()
         cursor.close()
         return jsonify(result), 200
     except Exception as e:
+        print(f"Error in get_classes: {e}")  # Log the error
         return jsonify({'error': str(e)}), 500
 
 # Route to get account movements
-@app.route('/<class_name>/account-movements', methods=['GET'])
+@app.route('/api/<class_name>/account-movements', methods=['GET'])
 def account_movements(class_name):
     try:
         db = getattr(g, 'db', None)
@@ -243,7 +245,7 @@ def account_movements(class_name):
         return jsonify({'error': str(e)}), 500
 
 # Route to get children
-@app.route('/<class_name>/children', methods=['GET'])
+@app.route('/api/<class_name>/children', methods=['GET'])
 def get_children(class_name):
     try:
         db = getattr(g, 'db', None)
@@ -260,7 +262,7 @@ def get_children(class_name):
 
 
 # Add child with email
-@app.route('/<class_name>/children', methods=['POST'])
+@app.route('/api/<class_name>/children', methods=['POST'])
 def add_child(class_name):
     try:
         data = request.json
@@ -281,7 +283,7 @@ def add_child(class_name):
         return jsonify({'error': str(e)}), 500
 
 # Modify child with email
-@app.route('/<class_name>/children/<int:child_id>', methods=['PUT'])
+@app.route('/api/<class_name>/children/<int:child_id>', methods=['PUT'])
 def modify_child(class_name, child_id):
     try:
         data = request.json
@@ -301,7 +303,7 @@ def modify_child(class_name, child_id):
         return jsonify({'error': str(e)}), 500
 
 # Route to delete a child
-@app.route('/<class_name>/children/<int:child_id>', methods=['DELETE'])
+@app.route('/api/<class_name>/children/<int:child_id>', methods=['DELETE'])
 def delete_child(class_name, child_id):
     try:
         db = getattr(g, 'db', None)
@@ -314,7 +316,7 @@ def delete_child(class_name, child_id):
         return jsonify({'error': str(e)}), 500
 
 # Get student's account movements
-@app.route('/<class_name>/<url_name>/account-movements', methods=['GET'])
+@app.route('/api/<class_name>/<url_name>/account-movements', methods=['GET'])
 def get_student_account_movements(class_name, url_name):
     try:
         db = getattr(g, 'db', None)
@@ -337,7 +339,7 @@ def get_student_account_movements(class_name, url_name):
         return jsonify({'error': str(e)}), 500
 
 # Route to delete a class
-@app.route('/delete-class/<class_name>', methods=['DELETE'])
+@app.route('/api/delete-class/<class_name>', methods=['DELETE'])
 def delete_class_database(class_name):
     try:
         db_name = f"{class_name}_db"
@@ -351,7 +353,7 @@ def delete_class_database(class_name):
         return jsonify({'error': f"Failed to delete class '{class_name}' database."}), 500
 
 # Route to add money for a child
-@app.route('/<class_name>/add-money', methods=['POST'])
+@app.route('/api/<class_name>/add-money', methods=['POST'])
 def add_money(class_name):
     try:
         # Retrieve the connection to the correct database from Flask's global object
@@ -425,7 +427,7 @@ def get_child_name_by_id(child_id):
             cursor.close()
 
 # Route to take money
-@app.route('/<class_name>/take-money', methods=['POST'])
+@app.route('/api/<class_name>/take-money', methods=['POST'])
 def take_money(class_name):
     try:
         # Retrieve the database connection for the current class from Flask's global object
