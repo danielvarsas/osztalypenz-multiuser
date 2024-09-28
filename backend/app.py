@@ -124,7 +124,7 @@ def before_request():
 
 
 # Endpoint to create a new class with PIN and Admin Email
-@app.route('/create-class', methods=['POST'])
+@app.route('/api/create-class', methods=['POST'])
 def create_class():
     data = request.get_json()
     class_name = data.get('class_name')
@@ -181,7 +181,7 @@ def create_class():
 
 
 # Route to modify admin email and/or PIN for a class
-@app.route('/update-class-admin', methods=['PUT'])
+@app.route('/api/update-class-admin', methods=['PUT'])
 def update_class_admin():
     data = request.get_json()
     class_name = data.get('class_name')
@@ -211,7 +211,7 @@ def update_class_admin():
 
 
 # Get classes including admin email
-@app.route('/classes', methods=['GET'])
+@app.route('/api/classes', methods=['GET'])
 def get_classes():
     try:
         connection = mysql.connector.connect(**db_config_default)
