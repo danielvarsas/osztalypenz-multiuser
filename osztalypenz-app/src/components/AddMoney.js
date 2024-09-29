@@ -10,7 +10,7 @@ const AddMoney = () => {
   const [amount, setAmount] = useState('');
   const [message, setMessage] = useState(''); // State to store the message
   const [children, setChildren] = useState([]);
-  const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}:5000`;
+  const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/api`;
 
   useEffect(() => {
     const fetchChildren = async () => {

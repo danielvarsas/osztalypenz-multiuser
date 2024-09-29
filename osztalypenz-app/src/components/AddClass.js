@@ -9,14 +9,14 @@ const AddClass = () => {
   const [classes, setClasses] = useState([]); // State to store class list
   const [editingClass, setEditingClass] = useState(null); // State to store the class being edited
   const [newEmail, setNewEmail] = useState(''); // State to store the new email being edited
-  const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}/api`;
+  const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/api`;
 
   // Fetch classes when the component mounts
   useEffect(() => {
     const fetchClasses = async () => {
       try {
         // const response = await axios.get(`${apiUrl}/classes`);
-        const response = await axios.get(`api/classes`);
+        const response = await axios.get(`${apiUrl}/classes`);
         setClasses(response.data); // Set fetched classes
       } catch (error) {
         console.error('Error fetching classes:', error);
@@ -36,7 +36,7 @@ const AddClass = () => {
 
   // Make a POST request to the backend to create a new class
   axios
-    .post(`${apiUrl}/create-class`, {
+    .post(`api/create-class`, {
       class_name: className,
       admin_email: adminEmail,
       pin_code: pin_code,
@@ -64,7 +64,7 @@ const AddClass = () => {
     if (window.confirm(`Are you sure you want to delete the class: ${classNameToDelete}?`)) {
       // Add the API call to delete the class
       axios
-        .delete(`${apiUrl}/classes/${classNameToDelete}`)
+        .delete(`api/classes/${classNameToDelete}`)
         .then(() => {
           setMessage(`Class '${classNameToDelete}' deleted successfully.`);
           setClasses(classes.filter((cls) => cls.class_name !== classNameToDelete)); // Remove the deleted class from the list
@@ -90,7 +90,7 @@ const AddClass = () => {
     }
 
     axios
-      .put(`${apiUrl}/update-class-admin`, { class_name: className, admin_email: newEmail })
+      .put(`api/update-class-admin`, { class_name: className, admin_email: newEmail })
       .then((response) => {
         setMessage(response.data.message);
         setEditingClass(null); // Reset the editing state

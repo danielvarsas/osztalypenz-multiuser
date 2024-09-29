@@ -8,7 +8,8 @@ const AccountMovements = () => {
   const [movements, setMovements] = useState([]);
   const [balance, setBalance] = useState(0); // State to store the balance
 
-  const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}:5000`;
+  //const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}/api`;
+  const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/api`;
 
 
   useEffect(() => {

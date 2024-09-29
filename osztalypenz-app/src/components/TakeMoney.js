@@ -9,7 +9,8 @@ const TakeMoney = () => {
   const [reason, setReason] = useState('');
   const [message, setMessage] = useState('');
   const navigate = useNavigate(); // Use navigate to handle redirection
-  const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}:5000`;
+  //const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}:5000`;
+  const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/api`;
 
   const handleTakeMoney = async () => {
     setMessage('');

@@ -10,7 +10,9 @@ const ManageChildren = () => {
   const [newChildEmail, setNewChildEmail] = useState('');  // New state for email
   const [editingChild, setEditingChild] = useState(null);
   const [message, setMessage] = useState('');
-  const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}:5000`;
+  //const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}`;
+  const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/api`;
+
 
   useEffect(() => {
     const fetchChildren = async () => {
