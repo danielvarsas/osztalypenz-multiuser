@@ -22,16 +22,30 @@ def create_class():
         return jsonify({'error': 'Class name, email, and PIN are required'}), 400
 
     try:
+      # Check if the class already exists in the main DB
+        main_db_connection = get_db_connection()  # Connect to the main DB (osztalypenz_db)
+        main_cursor = main_db_connection.cursor()
+        main_cursor.execute("SELECT class_name FROM class_admins WHERE class_name = %s", (class_name,))
+        existing_class = main_cursor.fetchone()
+
+        if existing_class:
+            return jsonify({'error': 'Class name already exists!'}), 400
+        
+        print(f"Creating new class: {class_name}")
+        print(f"Hashing PIN for {admin_email}")
         # Hash the PIN before storing it
         hashed_pin = hash_pin(pin_code)
-
+        
+        print(f"Creating class-specific DB: {db_name}")
+        
         # Create class-specific database
         db_name = f"{class_name.lower()}_db"
         create_database(class_name)
 
         # Connect to class-specific DB
         class_db_connection = get_db_connection(db_name)
-
+        
+        print(f"Inserting admin details for {class_name}")
         # Initialize the class-specific database
         initialize_database(class_db_connection)
 
@@ -43,6 +57,8 @@ def create_class():
         main_cursor = main_db_connection.cursor()
         main_cursor.execute("INSERT INTO class_admins (class_name, admin_email, pin_code) VALUES (%s, %s, %s)", 
                             (class_name, admin_email, hashed_pin))
+                            
+        print(f"classadmin created for {name}")
         main_db_connection.commit()
 
         # Close connections
