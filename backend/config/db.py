@@ -42,6 +42,25 @@ def create_database(subdomain):
         print(f"Error creating database '{db_name}': {e}")
         raise Exception(f"Database creation failed: {e}")
 
+def initialize_main_database(connection):
+    try:
+        with connection.cursor() as cursor:
+            # Create the class_admins table in the main database if it doesn't exist
+            cursor.execute("""
+            CREATE TABLE IF NOT EXISTS class_admins (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                class_name VARCHAR(255) NOT NULL UNIQUE,
+                admin_email VARCHAR(255) NOT NULL,
+                pin_code VARCHAR(255) NOT NULL  -- Adjusted size for hashed PIN
+            );
+            """)
+        connection.commit()
+        print("Main database initialized successfully.")
+
+    except Error as e:
+        print(f"Error initializing main database: {e}")
+        raise Exception(f"Main database initialization failed: {e}")
+
     
 def initialize_database(connection):
     try:

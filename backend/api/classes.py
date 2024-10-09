@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request, session
-from config.db import get_db_connection, create_database, initialize_database, hash_pin, check_pin
+from config.db import get_db_connection, create_database, initialize_database, hash_pin, check_pin, initialize_main_database
 
 classes_bp = Blueprint('classes', __name__)
 
@@ -22,44 +22,38 @@ def create_class():
         return jsonify({'error': 'Class name, email, and PIN are required'}), 400
 
     try:
-        # Step 1: Hash the PIN before storing it
+        # Hash the PIN before storing it
         hashed_pin = hash_pin(pin_code)
 
-        # Step 2: Create the new class-specific database
+        # Create class-specific database
         db_name = f"{class_name.lower()}_db"
-        create_database(class_name)  # Create the new class-specific database
+        create_database(class_name)
 
-        # Step 3: Connect to the new class-specific database
-        class_db_connection = get_db_connection(db_name)  # Connect to the new class-specific DB
+        # Connect to class-specific DB
+        class_db_connection = get_db_connection(db_name)
 
-        # Step 4: Initialize the new class database (create children, transactions, etc.)
-        initialize_database(class_db_connection)  # Initialize the tables in the new class-specific DB
+        # Initialize the class-specific database
+        initialize_database(class_db_connection)
 
-        # Step 5: Insert the "Kivét" child into the new class's children table
-        cursor = class_db_connection.cursor()
-        cursor.execute("""
-            INSERT INTO children (id, name, url_name, email, isDeleted)
-            VALUES (1, 'Kivét', 'kivet', NULL, FALSE)
-        """)
-        class_db_connection.commit()
+        # Ensure main database has `class_admins` table
+        main_db_connection = get_db_connection()  # Connect to the main DB (osztalypenz_db)
+        initialize_main_database(main_db_connection)  # Initialize `class_admins` if not exists
 
-        # Step 6: Insert class info into the `class_admins` table in the main database (osztalypenz_db)
-        main_db_connection = get_db_connection()  # Connect to the main DB
+        # Insert class admin info into `class_admins` table in main database
         main_cursor = main_db_connection.cursor()
-
         main_cursor.execute("INSERT INTO class_admins (class_name, admin_email, pin_code) VALUES (%s, %s, %s)", 
                             (class_name, admin_email, hashed_pin))
         main_db_connection.commit()
 
-        # Close all connections
-        cursor.close()
-        class_db_connection.close()
+        # Close connections
         main_cursor.close()
+        class_db_connection.close()
         main_db_connection.close()
 
         return jsonify({'message': f"Class '{class_name}' created successfully!"}), 201
 
     except Exception as e:
+        print(f"Error during class creation: {e}")
         return jsonify({'error': str(e)}), 500
 
 
