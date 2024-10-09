@@ -91,7 +91,8 @@ def initialize_database(connection):
             );
             """)
             
-                        # Step to add the default "Kivét" child with ID 1
+            connection.commit()
+                        
             cursor.execute("""
             INSERT INTO children (id, name, url_name, email, isDeleted)
             VALUES (1, 'Kivét', 'kivet', NULL, FALSE)
