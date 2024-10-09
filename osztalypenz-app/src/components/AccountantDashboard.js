@@ -6,41 +6,61 @@ const AccountantDashboard = () => {
   const { className } = useParams(); 
   const navigate = useNavigate(); 
   const [classExists, setClassExists] = useState(null); // null: loading, true: exists, false: doesn't exist
+  const [authorized, setAuthorized] = useState(false); // To track if the user is authorized
   const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/api`;
 
   // Function to check if class exists
   const checkClassExists = async () => {
     try {
-      const response = await fetch(`${apiUrl}/classes/${className}`); // Make API request to check class existence
+      const response = await fetch(`${apiUrl}/classes/${className}`);
       if (response.status === 200) {
-        setClassExists(true);  // Class exists
+        setClassExists(true);
       } else {
-        setClassExists(false); // Class doesn't exist
+        setClassExists(false);
       }
     } catch (error) {
       console.error('Error checking class existence:', error);
-      setClassExists(false);  // On error, assume class doesn't exist
+      setClassExists(false);
     }
   };
 
-  // useEffect hook to check if the class exists when the component mounts
+  // Function to check if the user is authenticated
+  const checkAuthorization = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/${className}/dashboard`, {
+        method: 'GET',
+        credentials: 'include', // Include the session cookie
+      });
+
+      if (response.status === 403) {
+        // Not authorized, redirect to login page
+        navigate(`/${className}/login`);
+      } else {
+        setAuthorized(true); // User is authorized
+      }
+    } catch (error) {
+      console.error('Error checking authorization:', error);
+      navigate(`/${className}/login`);
+    }
+  };
+
+  // Check if the class exists and if the user is authorized
   useEffect(() => {
     checkClassExists();
+    checkAuthorization(); // Check authorization after checking class existence
   }, [className]);
 
-  // Show loading state while checking
-  if (classExists === null) {
+  // Show loading state while checking class and authorization
+  if (classExists === null || !authorized) {
     return <div>Loading...</div>;
   }
 
   // If class doesn't exist, redirect to a "Not Found" page or show an error
   if (!classExists) {
-    return <div>Class not found. Redirecting...</div>; // Show a message
-    // Optionally, redirect:
-    // useNavigate('/not-found');
+    return <div>Class not found. Redirecting...</div>;
   }
 
-  // If class exists, render the dashboard
+  // If class exists and user is authorized, render the dashboard
   return (
     <div>
       {/* Header Section */}

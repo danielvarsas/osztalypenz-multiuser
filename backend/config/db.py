@@ -1,6 +1,7 @@
 import os
 from mysql.connector import connect, Error
 from dotenv import load_dotenv
+import bcrypt
 
 load_dotenv()
 
@@ -42,26 +43,11 @@ def create_database(subdomain):
         raise Exception(f"Database creation failed: {e}")
 
     
-def initialize_main_database(connection):
-    try:
-        with connection.cursor() as cursor:
-            # SQL to create the class_admins table in the main database if it doesn't exist
-            cursor.execute("""
-            CREATE TABLE IF NOT EXISTS class_admins (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                class_name VARCHAR(255) NOT NULL UNIQUE,
-                admin_email VARCHAR(255) NOT NULL,
-                pin_code VARCHAR(10) NOT NULL
-            );
-            """)
-        connection.commit()
-    except Error as e:
-        print(f"Error initializing main database: {e}")
-        raise Exception(f"Main database initialization failed: {e}")
-
 def initialize_database(connection):
     try:
         with connection.cursor() as cursor:
+            # SQL to create the class_admins table in the class-specific database
+         
             # SQL to create the children table in the class-specific database
             cursor.execute("""
             CREATE TABLE IF NOT EXISTS children (
@@ -85,9 +71,23 @@ def initialize_database(connection):
                 FOREIGN KEY (child_id) REFERENCES children(id)
             );
             """)
+        
+        # Commit the transaction to ensure tables are created
         connection.commit()
+        print("Class-specific database initialized successfully.")
+
     except Error as e:
         print(f"Error initializing class database: {e}")
         raise Exception(f"Class database initialization failed: {e}")
 
 
+
+def hash_pin(pin_code):
+    # Generate salt and hash the pin
+    salt = bcrypt.gensalt()
+    hashed_pin = bcrypt.hashpw(pin_code.encode('utf-8'), salt)
+    return hashed_pin.decode('utf-8')
+
+def check_pin(pin_code, hashed_pin):
+    # Check if the provided pin matches the hashed pin
+    return bcrypt.checkpw(pin_code.encode('utf-8'), hashed_pin.encode('utf-8'))

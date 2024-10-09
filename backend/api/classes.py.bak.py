@@ -1,15 +1,7 @@
-from flask import Blueprint, jsonify, request, session
-from config.db import get_db_connection, create_database, initialize_database, hash_pin, check_pin
+from flask import Blueprint, jsonify, request
+from config.db import get_db_connection, create_database, initialize_database, initialize_main_database, hash_pin, check_pin
 
 classes_bp = Blueprint('classes', __name__)
-
-import bcrypt
-
-def hash_pin(pin_code):
-    # Generate salt and hash the pin
-    salt = bcrypt.gensalt()
-    hashed_pin = bcrypt.hashpw(pin_code.encode('utf-8'), salt)
-    return hashed_pin.decode('utf-8')
 
 @classes_bp.route('/create-class', methods=['POST'])
 def create_class():
@@ -22,42 +14,49 @@ def create_class():
         return jsonify({'error': 'Class name, email, and PIN are required'}), 400
 
     try:
-        # Step 1: Hash the PIN before storing it
-        hashed_pin = hash_pin(pin_code)
+        # Step 1: Connect to the main database and ensure class_admins table exists
+        main_db_connection = get_db_connection()  # Connect to main DB (global)
+        initialize_main_database(main_db_connection)  # Ensure class_admins table exists in main DB only
 
-        # Step 2: Create the new class-specific database
+        cursor = main_db_connection.cursor()
+
+        # Step 2: Check if the class already exists in class_admins
+        cursor.execute("SELECT class_name FROM class_admins WHERE class_name = %s", (class_name,))
+        existing_class = cursor.fetchone()
+
+        if existing_class:
+            return jsonify({'error': 'Class name already exists'}), 400
+
+        # Step 3: Create the new class-specific database
         db_name = f"{class_name.lower()}_db"
         create_database(class_name)  # Create the new class-specific database
 
-        # Step 3: Connect to the new class-specific database
+        # Step 4: Connect to the new class-specific database
         class_db_connection = get_db_connection(db_name)  # Connect to the new class-specific DB
 
-        # Step 4: Initialize the new class database (create children, transactions, etc.)
-        initialize_database(class_db_connection)  # Initialize the tables in the new class-specific DB
+        # Step 5: Initialize the new class database (create children, transactions, etc.)
+        initialize_database(class_db_connection)  # Initialize only the class-specific tables (no class_admins here)
 
-        # Step 5: Insert the "Kivét" child into the new class's children table
-        cursor = class_db_connection.cursor()
-        cursor.execute("""
+        # Step 6: Insert class admin info into the main database's class_admins table
+        cursor.execute("INSERT INTO class_admins (class_name, admin_email, pin_code) VALUES (%s, %s, %s)", 
+                       (class_name, admin_email, pin_code))
+        main_db_connection.commit()
+
+        # Step 7: Insert the "Kivét" child into the new class's children table
+        class_cursor = class_db_connection.cursor()
+        class_cursor.execute("""
             INSERT INTO children (id, name, url_name, email, isDeleted)
             VALUES (1, 'Kivét', 'kivet', NULL, FALSE)
         """)
         class_db_connection.commit()
 
-        # Step 6: Insert class info into the `class_admins` table in the main database (osztalypenz_db)
-        main_db_connection = get_db_connection()  # Connect to the main DB
-        main_cursor = main_db_connection.cursor()
-
-        main_cursor.execute("INSERT INTO class_admins (class_name, admin_email, pin_code) VALUES (%s, %s, %s)", 
-                            (class_name, admin_email, hashed_pin))
-        main_db_connection.commit()
-
         # Close all connections
-        cursor.close()
+        class_cursor.close()
         class_db_connection.close()
-        main_cursor.close()
+        cursor.close()
         main_db_connection.close()
 
-        return jsonify({'message': f"Class '{class_name}' created successfully!"}), 201
+        return jsonify({'message': f"Class '{class_name}' created successfully, including 'Kivét' child!"}), 201
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -69,13 +68,13 @@ def create_class():
 def get_classes():
     try:
         # Connect to the main database (where class_admins is stored)
-        connection = get_db_connection()  # Ensure this uses db_config_default, which includes the main database
+        connection = get_db_connection()  # Ensure this uses db_config_default, which includes the database name
         if not connection:
             return jsonify({'error': 'Failed to connect to main database'}), 500
 
         cursor = connection.cursor(dictionary=True)
 
-        # Query to fetch all classes and their admin emails from class_admins table in the main database
+        # Query to fetch all classes and their admin emails from class_admins table
         cursor.execute("SELECT class_name, admin_email FROM class_admins;")
         classes = cursor.fetchall()
 
@@ -87,7 +86,6 @@ def get_classes():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
         
 @classes_bp.route('/classes/<class_name>', methods=['GET'])
 def check_class_exists(class_name):
@@ -120,11 +118,3 @@ def check_class_exists(class_name):
         return jsonify({'error': str(e)}), 500
 
 
-@classes_bp.route('/<class_name>/dashboard', methods=['GET'])
-def class_dashboard(class_name):
-    # Check if the class admin has been authenticated
-    if session.get('authenticated_class') != class_name:
-        return jsonify({'error': 'Unauthorized access, please provide valid PIN'}), 403
-
-    # If authenticated, return the dashboard
-    return jsonify({'message': f'Welcome to {class_name} dashboard!'}), 200

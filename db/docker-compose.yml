@@ -7,10 +7,29 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: PassWord!
       MYSQL_DATABASE: osztalypenz_db
+      MYSQL_USER: keycloak
+      MYSQL_PASSWORD: keycloak_password
     ports:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      DB_VENDOR: mysql
+      DB_ADDR: db
+      DB_DATABASE: keycloak
+      DB_USER: keycloak
+      DB_PASSWORD: keycloak_password
+    ports:
+      - "8081:8080"  # Expose Keycloak on port 8081
+    depends_on:
+      - db  # Ensure MySQL starts before Keycloak
+    command:
+      - start-dev  # Using development mode for Keycloak
 
   adminer:
     image: adminer
@@ -22,4 +41,3 @@ services:
 
 volumes:
   db_data: {}
-

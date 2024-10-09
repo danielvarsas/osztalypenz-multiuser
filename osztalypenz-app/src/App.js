@@ -9,6 +9,7 @@ import ManageChildren from './components/ManageChildren'; // Import ManageChildr
 import AddClass from './components/AddClass'; // Import AddClass component
 import StudentAccountMovements from './components/StudentAccountMovements'; // Adjust the path according to your folder structure
 import NotFoundPage from './components/NotFoundPage'; 
+import Login from './components/Login';
 
 
 const App = () => {
@@ -16,6 +17,7 @@ const App = () => {
     <Router>
       <Routes>
         <Route path="/" element={<Dashboard />} />
+         <Route path="/:className/login" element={<Login />} />
         <Route path="/add-class" element={<AddClass />} /> {/* Route for adding a new class */}
         <Route path="/:className/student/:studentId" element={<StudentAccountMovements />} />
         <Route path="/404" element={<NotFoundPage />} />
