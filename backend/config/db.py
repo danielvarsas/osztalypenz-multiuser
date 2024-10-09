@@ -17,7 +17,7 @@ db_config_default = {
     **db_config_base,
     'database': os.getenv('DB_NAME')
 }
-        
+
 def get_db_connection(db_name=None):
     try:
         # Use the main database (db_config_default) if no specific db_name is provided
@@ -28,7 +28,6 @@ def get_db_connection(db_name=None):
         print(f"Error connecting to MySQL: {e}")
         raise Exception(f"Database connection failed: {e}")
 
-
 def create_database(subdomain):
     db_name = f"{subdomain}_db"
     try:
@@ -36,11 +35,12 @@ def create_database(subdomain):
         with connection.cursor() as cursor:
             cursor.execute(f"CREATE DATABASE IF NOT EXISTS `{db_name}`;")
         connection.commit()
-        connection.close()
-        return db_name
     except Error as e:
         print(f"Error creating database '{db_name}': {e}")
         raise Exception(f"Database creation failed: {e}")
+    finally:
+        connection.close()  # Always close the connection after use
+    return db_name
 
 def initialize_main_database(connection):
     try:
@@ -56,17 +56,13 @@ def initialize_main_database(connection):
             """)
         connection.commit()
         print("Main database initialized successfully.")
-
     except Error as e:
         print(f"Error initializing main database: {e}")
         raise Exception(f"Main database initialization failed: {e}")
 
-    
 def initialize_database(connection):
     try:
         with connection.cursor() as cursor:
-            # SQL to create the class_admins table in the class-specific database
-         
             # SQL to create the children table in the class-specific database
             cursor.execute("""
             CREATE TABLE IF NOT EXISTS children (
@@ -90,15 +86,13 @@ def initialize_database(connection):
                 FOREIGN KEY (child_id) REFERENCES children(id)
             );
             """)
-            
-            connection.commit()
-                        
+
+            # Insert the "Kivét" child record
             cursor.execute("""
-            INSERT INTO children (id, name, url_name, email, isDeleted)
-            VALUES (1, 'Kivét', 'kivet', NULL, FALSE)
-            ON DUPLICATE KEY UPDATE id = id;  -- This ensures we don't create it again if it already exists
+            INSERT IGNORE INTO children (id, name, url_name, email, isDeleted)
+            VALUES (1, 'Kivét', 'kivet', NULL, FALSE);
             """)
-        
+
         # Commit the transaction to ensure tables are created
         connection.commit()
         print("Class-specific database initialized successfully.")
@@ -107,7 +101,8 @@ def initialize_database(connection):
         print(f"Error initializing class database: {e}")
         raise Exception(f"Class database initialization failed: {e}")
 
-
+    finally:
+        connection.close()  # Always close the connection after initialization
 
 def hash_pin(pin_code):
     # Generate salt and hash the pin

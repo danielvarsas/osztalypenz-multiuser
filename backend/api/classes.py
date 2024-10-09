@@ -22,54 +22,59 @@ def create_class():
         return jsonify({'error': 'Class name, email, and PIN are required'}), 400
 
     try:
-        # Get the main DB connection once
-        main_db_connection = get_db_connection()
-
-        # Check if the class already exists in the main DB
+        # Step 1: Check if the class already exists in the main DB
+        print(f"Step 1: Checking if the class '{class_name}' exists in osztalypenz_db", flush=True)
+        main_db_connection = get_db_connection()  # Connect to the main DB (osztalypenz_db)
         main_cursor = main_db_connection.cursor()
+
         main_cursor.execute("SELECT class_name FROM class_admins WHERE class_name = %s", (class_name,))
         existing_class = main_cursor.fetchone()
 
         if existing_class:
+            print(f"Class '{class_name}' already exists", flush=True)
             main_cursor.close()
             main_db_connection.close()
             return jsonify({'error': 'Class name already exists!'}), 400
-        
-        # Proceed to create the class
-        print(f"Creating new class: {class_name}")
-        print(f"Hashing PIN for {admin_email}")
 
-        # Hash the PIN before storing it
+        # Step 2: Hash the PIN before storing it
+        print(f"Step 2: Hashing PIN for '{admin_email}'", flush=True)
         hashed_pin = hash_pin(pin_code)
-        
-        # Create class-specific database
-        db_name = f"{class_name.lower()}_db"
+
+        # Step 3: Create the new class-specific database
+        print(f"Step 3: Creating class-specific database '{class_name}'", flush=True)
         create_database(class_name)
 
-        # Connect to class-specific DB
+        # Step 4: Connect to the class-specific DB and initialize
+        print(f"Step 4: Connecting and initializing class-specific DB '{class_name}'", flush=True)
+        db_name = f"{class_name.lower()}_db"
         class_db_connection = get_db_connection(db_name)
-        
-        print(f"Inserting admin details for {class_name}")
-        # Initialize the class-specific database
         initialize_database(class_db_connection)
 
-        # Insert class admin info into `class_admins` table in main database
-        main_cursor = main_db_connection.cursor()  # Get a fresh cursor after closing the previous one
-        main_cursor.execute("INSERT INTO class_admins (class_name, admin_email, pin_code) VALUES (%s, %s, %s)", 
-                            (class_name, admin_email, hashed_pin))
-                            
-        print(f"classadmin created for {class_name}")
+        # Step 5: Ensure the main database has the class_admins table
+        print(f"Step 5: Ensuring 'class_admins' exists in osztalypenz_db", flush=True)
+        initialize_main_database(main_db_connection)  # Ensure the table exists
+
+        # Step 6: Insert class admin info into class_admins table in osztalypenz_db
+        print(f"Step 6: Inserting class admin info into 'class_admins'", flush=True)
+        main_cursor.execute(
+            "INSERT INTO class_admins (class_name, admin_email, pin_code) VALUES (%s, %s, %s)",
+            (class_name, admin_email, hashed_pin)
+        )
+
+        # Step 7: Commit and close all connections
+        print(f"Step 7: Committing to osztalypenz_db", flush=True)
         main_db_connection.commit()
 
-        # Close connections
+        # Step 8: Close all database connections
         main_cursor.close()
         class_db_connection.close()
         main_db_connection.close()
 
+        print(f"Class '{class_name}' created successfully!", flush=True)
         return jsonify({'message': f"Class '{class_name}' created successfully!"}), 201
 
     except Exception as e:
-        print(f"Error during class creation: {e}")
+        print(f"Error during class creation: {e}", flush=True)
         return jsonify({'error': str(e)}), 500
 
 
