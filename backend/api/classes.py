@@ -36,7 +36,7 @@ def create_class():
         # Hash the PIN before storing it
         hashed_pin = hash_pin(pin_code)
         
-        print(f"Creating class-specific DB: {db_name}")
+        print(f"Creating class-specific DB")
         
         # Create class-specific database
         db_name = f"{class_name.lower()}_db"
