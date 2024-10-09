@@ -22,21 +22,25 @@ def create_class():
         return jsonify({'error': 'Class name, email, and PIN are required'}), 400
 
     try:
-      # Check if the class already exists in the main DB
-        main_db_connection = get_db_connection()  # Connect to the main DB (osztalypenz_db)
+        # Get the main DB connection once
+        main_db_connection = get_db_connection()
+
+        # Check if the class already exists in the main DB
         main_cursor = main_db_connection.cursor()
         main_cursor.execute("SELECT class_name FROM class_admins WHERE class_name = %s", (class_name,))
         existing_class = main_cursor.fetchone()
 
         if existing_class:
+            main_cursor.close()
+            main_db_connection.close()
             return jsonify({'error': 'Class name already exists!'}), 400
         
+        # Proceed to create the class
         print(f"Creating new class: {class_name}")
         print(f"Hashing PIN for {admin_email}")
+
         # Hash the PIN before storing it
         hashed_pin = hash_pin(pin_code)
-        
-        print(f"Creating class-specific DB")
         
         # Create class-specific database
         db_name = f"{class_name.lower()}_db"
@@ -49,16 +53,12 @@ def create_class():
         # Initialize the class-specific database
         initialize_database(class_db_connection)
 
-        # Ensure main database has `class_admins` table
-        main_db_connection = get_db_connection()  # Connect to the main DB (osztalypenz_db)
-        initialize_main_database(main_db_connection)  # Initialize `class_admins` if not exists
-
         # Insert class admin info into `class_admins` table in main database
-        main_cursor = main_db_connection.cursor()
+        main_cursor = main_db_connection.cursor()  # Get a fresh cursor after closing the previous one
         main_cursor.execute("INSERT INTO class_admins (class_name, admin_email, pin_code) VALUES (%s, %s, %s)", 
                             (class_name, admin_email, hashed_pin))
                             
-        print(f"classadmin created for {name}")
+        print(f"classadmin created for {class_name}")
         main_db_connection.commit()
 
         # Close connections
@@ -71,6 +71,7 @@ def create_class():
     except Exception as e:
         print(f"Error during class creation: {e}")
         return jsonify({'error': str(e)}), 500
+
 
 
 
