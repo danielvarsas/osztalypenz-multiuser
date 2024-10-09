@@ -90,6 +90,13 @@ def initialize_database(connection):
                 FOREIGN KEY (child_id) REFERENCES children(id)
             );
             """)
+            
+                        # Step to add the default "Kivét" child with ID 1
+            cursor.execute("""
+            INSERT INTO children (id, name, url_name, email, isDeleted)
+            VALUES (1, 'Kivét', 'kivet', NULL, FALSE)
+            ON DUPLICATE KEY UPDATE id = id;  -- This ensures we don't create it again if it already exists
+            """)
         
         # Commit the transaction to ensure tables are created
         connection.commit()
