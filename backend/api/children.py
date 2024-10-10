@@ -18,7 +18,7 @@ def get_children(class_name):
             connection.close()
             return jsonify(result), 200
         else:
-            return jsonify({'error': 'Failed to connect to class database'}), 500
+            return jsonify({'error': 'Failed to connect to class database. Valami nem ok, szólj Daninak, javítson meg.'}), 500
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -32,7 +32,7 @@ def add_child(class_name):
         pin_code = data.get('pin_code')
 
         if not child_name or not email or not pin_code:
-            return jsonify({'error': 'Child name, email, and PIN code are required'}), 400
+            return jsonify({'error': 'Tanuló neve, email címe, és PIN kódja is kelletik :)'}), 400
 
         # Hash the pin code before storing it
         hashed_pin = hash_pin(pin_code)
@@ -43,7 +43,7 @@ def add_child(class_name):
         # Get the database connection for the correct class
         connection = get_db_connection(f"{class_name.lower()}_db")
         if not connection:
-            return jsonify({'error': 'Failed to connect to class database'}), 500
+            return jsonify({'error': 'Failed to connect to class database. Valami nem ok, szólj Daninak, javítson meg.'}), 500
 
         cursor = connection.cursor()
 
@@ -75,7 +75,7 @@ def modify_child(class_name, child_id):
 
         # Input validation
         if not new_name or not new_email:
-            return jsonify({'error': 'Both name and email are required'}), 400
+            return jsonify({'error': 'Kell a név és az email cím is.'}), 400
 
         # Generate URL-friendly name (for url_name)
         url_name = unidecode.unidecode(new_name.lower()).replace(' ', '-')
@@ -83,7 +83,7 @@ def modify_child(class_name, child_id):
         # Get the database connection for the correct class
         connection = get_db_connection(f"{class_name.lower()}_db")
         if not connection:
-            return jsonify({'error': 'Failed to connect to class database'}), 500
+            return jsonify({'error': 'Failed to connect to class database, Valami nem ok, szólj Daninak, javítson meg.'}), 500
 
         cursor = connection.cursor()
 
@@ -95,7 +95,7 @@ def modify_child(class_name, child_id):
         cursor.close()
         connection.close()
 
-        return jsonify({'message': 'Child updated successfully'}), 200
+        return jsonify({'message': 'Tanuló adatai frissítve.'}), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -104,13 +104,13 @@ def modify_child(class_name, child_id):
 def get_child_account_movements(class_name, child_id):
     # Check if the child has been authenticated
     if not session.get(f'authenticated_child_{child_id}'):
-        return jsonify({'error': 'Unauthorized access, please provide valid PIN'}), 403
+        return jsonify({'error': 'Ajjaj, nem jó a PIN. Próbáld újra.'}), 403
 
     try:
         # Get the database connection for the correct class
         connection = get_db_connection(f"{class_name.lower()}_db")
         if not connection:
-            return jsonify({'error': 'Failed to connect to class database'}), 500
+            return jsonify({'error': 'Failed to connect to class database. Valami nem ok, szólj Daninak, javítson meg.'}), 500
 
         cursor = connection.cursor(dictionary=True)
 
@@ -122,6 +122,29 @@ def get_child_account_movements(class_name, child_id):
         connection.close()
 
         return jsonify(movements), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+        
+@children_bp.route('/<class_name>/children/<int:child_id>', methods=['DELETE'])
+def delete_child(class_name, child_id):
+    try:
+        # Get the database connection for the correct class
+        connection = get_db_connection(f"{class_name.lower()}_db")
+        if not connection:
+            return jsonify({'error': 'Failed to connect to class database. Valami nem ok, szólj Daninak, javítson meg.'}), 500
+
+        cursor = connection.cursor()
+
+        # Set isDeleted to TRUE for the given child
+        query = "UPDATE children SET isDeleted = TRUE WHERE id = %s"
+        cursor.execute(query, (child_id,))
+        connection.commit()
+
+        cursor.close()
+        connection.close()
+
+        return jsonify({'message': 'Tanuló sikeresen törölve.'}), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500

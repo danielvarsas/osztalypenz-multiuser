@@ -20,7 +20,7 @@ def add_money(class_name):
         connection.commit()
         cursor.close()
         connection.close()
-        return jsonify({'message': 'Transaction recorded successfully'}), 200
+        return jsonify({'message': 'Tranzakció rögzítve'}), 200
     else:
         return jsonify({'error': 'Failed to connect to database'}), 500
         
@@ -30,7 +30,7 @@ def take_money(class_name):
         # Get the database connection for the specific class
         connection = get_db_connection(f"{class_name.lower()}_db")
         if not connection:
-            return jsonify({'error': 'Failed to connect to class database'}), 500
+            return jsonify({'error': 'Failed to connect to class database. Valami nem ok, szólj Daninak, javítson meg.'}), 500
 
         data = request.json
         amount = data.get('amount')
@@ -38,7 +38,7 @@ def take_money(class_name):
 
         # Ensure that amount and reason are provided
         if not amount or not reason:
-            return jsonify({'error': 'Both amount and reason are required'}), 400
+            return jsonify({'error': 'Összeg és ok is kell.'}), 400
 
         # Use the child_id for "Kivét" (you mentioned this is always ID 1 for the "kivét" child)
         child_id_of_kivet = 1
@@ -54,7 +54,7 @@ def take_money(class_name):
         connection.close()
 
         # Return a success message
-        message = f"{amount} has been deducted for {reason}."
+        message = f"{amount} összeg kivételre került, {reason} céllal."
         return jsonify({'message': message}), 200
 
     except Exception as e:
@@ -68,7 +68,7 @@ def account_movements(class_name):
         # Get the database connection for the specific class
         connection = get_db_connection(f"{class_name.lower()}_db")
         if not connection:
-            return jsonify({'error': 'Failed to connect to class database'}), 500
+            return jsonify({'error': 'Failed to connect to class database. Valami nem ok, szólj Daninak, javítson meg.'}), 500
 
         cursor = connection.cursor(dictionary=True)
 

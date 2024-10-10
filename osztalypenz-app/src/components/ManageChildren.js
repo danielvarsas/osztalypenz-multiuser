@@ -44,10 +44,10 @@ const ManageChildren = () => {
       setNewChildName('');
       setNewChildEmail('');
       setNewChildPinCode(''); // Clear PIN code input after adding
-      setMessage('Child added successfully!');
+      setMessage('Tanuló sikeresen hozzáadva.');
     } catch (error) {
       console.error('Error adding child:', error);
-      setMessage('Error adding child.');
+      setMessage('Valami nem ok.');
     }
   };
 
@@ -55,7 +55,7 @@ const ManageChildren = () => {
     try {
       await axios.delete(`${apiUrl}/${className}/children/${childId}`);
       setChildren(children.filter((child) => child.id !== childId));
-      setMessage('Child deleted successfully!');
+      setMessage('Tanuló törölve.');
     } catch (error) {
       console.error('Error deleting child:', error);
       setMessage('Error deleting child.');
@@ -64,7 +64,7 @@ const ManageChildren = () => {
 
   const handleModifyChild = async (child) => {
     if (!editingChild || editingChild.name.trim() === '' || editingChild.email.trim() === '' || editingChild.pin_code.trim() === '') {
-      setMessage('Child name, email, and PIN are required.');
+      setMessage('Tanuló neve, email címe, és PIN kódja is kelletik :)');
       return;
     }
 
@@ -76,7 +76,7 @@ const ManageChildren = () => {
       });
       setChildren(children.map((c) => (c.id === child.id ? { ...c, name: editingChild.name, email: editingChild.email, pin_code: editingChild.pin_code } : c)));
       setEditingChild(null);
-      setMessage('Child modified successfully!');
+      setMessage('Tanuló adatai frissítve.');
     } catch (error) {
       console.error('Error modifying child:', error);
       setMessage('Error modifying child.');
