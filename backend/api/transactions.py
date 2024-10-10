@@ -92,4 +92,32 @@ def account_movements(class_name):
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+        
+@transactions_bp.route('/<class_name>/<child_name>/account-movements', methods=['GET'])
+def get_child_account_movements(class_name, child_name):
+    try:
+        # Connect to the class-specific database
+        connection = get_db_connection(f"{class_name.lower()}_db")
+        cursor = connection.cursor(dictionary=True)
+
+        # Fetch the child ID based on the provided child name (url_name)
+        cursor.execute("SELECT id FROM children WHERE url_name = %s LIMIT 1", (child_name,))
+        child = cursor.fetchone()
+
+        if not child:
+            return jsonify({'error': 'Child not found'}), 404
+
+        # Fetch all transactions for the specific child
+        cursor.execute("SELECT * FROM transactions WHERE child_id = %s", (child['id'],))
+        transactions = cursor.fetchall()
+
+        cursor.close()
+        connection.close()
+
+        # Return the list of transactions
+        return jsonify(transactions), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500        
+
 

@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request, g
-from config.db import get_db_connection
+from config.db import get_db_connection, hash_pin, check_pin
 import unidecode 
         
 children_bp = Blueprint('children', __name__)
@@ -28,10 +28,14 @@ def add_child(class_name):
     try:
         data = request.json
         child_name = data.get('name')
-        email = data.get('email') 
+        email = data.get('email')
+        pin_code = data.get('pin_code')
 
-        if not child_name or not email:
-            return jsonify({'error': 'Child name and email are required'}), 400
+        if not child_name or not email or not pin_code:
+            return jsonify({'error': 'Child name, email, and PIN code are required'}), 400
+
+        # Hash the pin code before storing it
+        hashed_pin = hash_pin(pin_code)
 
         # Generate URL-friendly name
         url_name = unidecode.unidecode(child_name.lower()).replace(' ', '-')
@@ -43,9 +47,9 @@ def add_child(class_name):
 
         cursor = connection.cursor()
 
-        # Insert the new child into the children table
-        cursor.execute("INSERT INTO children (name, url_name, email) VALUES (%s, %s, %s)", 
-                       (child_name, url_name, email))
+        # Insert the new child into the children table, including hashed pin_code
+        cursor.execute("INSERT INTO children (name, url_name, email, pin_code) VALUES (%s, %s, %s, %s)", 
+                       (child_name, url_name, email, hashed_pin))
         connection.commit()
 
         # Get the last inserted child's ID for response
@@ -59,6 +63,8 @@ def add_child(class_name):
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
 
 @children_bp.route('/<class_name>/children/<int:child_id>', methods=['PUT'])
 def modify_child(class_name, child_id):
@@ -93,3 +99,30 @@ def modify_child(class_name, child_id):
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+        
+@children_bp.route('/<class_name>/children/<child_id>/account-movements', methods=['GET'])
+def get_child_account_movements(class_name, child_id):
+    # Check if the child has been authenticated
+    if not session.get(f'authenticated_child_{child_id}'):
+        return jsonify({'error': 'Unauthorized access, please provide valid PIN'}), 403
+
+    try:
+        # Get the database connection for the correct class
+        connection = get_db_connection(f"{class_name.lower()}_db")
+        if not connection:
+            return jsonify({'error': 'Failed to connect to class database'}), 500
+
+        cursor = connection.cursor(dictionary=True)
+
+        # Fetch the account movements for the given child
+        cursor.execute("SELECT * FROM transactions WHERE child_id = %s", (child_id,))
+        movements = cursor.fetchall()
+
+        cursor.close()
+        connection.close()
+
+        return jsonify(movements), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+

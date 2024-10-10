@@ -368,3 +368,63 @@ h1 {
   color: red;
   margin-top: 20px;
 }
+
+/* App.css */
+
+/* General Payment Page Container */
+.payment-container {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Payment Section Styling */
+.payment-section {
+  margin-bottom: 30px;
+}
+
+/* Payment Row: Ensures alignment of label and button */
+.payment-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+/* Copy Button Styling */
+.copy-btn {
+  background-color: #007bff; /* Updated for more contrast */
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.copy-btn:hover {
+  background-color: #0056b3; /* Darker shade on hover for better interaction */
+}
+
+/* Revolut Link Styling */
+.revolut-link {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.revolut-link:hover {
+  text-decoration: underline;
+}
+
+/* QR Code Image Styling */
+.qr-code-container {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.qr-code-image {
+  max-width: 100%;
+  height: auto;
+}

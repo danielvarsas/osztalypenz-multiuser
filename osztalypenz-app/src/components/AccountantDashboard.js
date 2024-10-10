@@ -65,7 +65,7 @@ const AccountantDashboard = () => {
     <div>
       {/* Header Section */}
       <header className="app-header">
-        <h1>{className} Dashboard</h1>
+        <h1>Osztálypénz - {className}</h1>
       </header>
 
       {/* Render buttons for navigation */}

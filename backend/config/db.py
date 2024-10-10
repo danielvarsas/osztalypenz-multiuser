@@ -70,6 +70,7 @@ def initialize_database(connection):
                 name VARCHAR(255) NOT NULL,
                 url_name VARCHAR(255) NOT NULL,
                 email VARCHAR(255),
+                pin_code VARCHAR(255) NOT NULL,  -- Added PIN code column
                 isDeleted BOOLEAN DEFAULT FALSE
             );
             """)

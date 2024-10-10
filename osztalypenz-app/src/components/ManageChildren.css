@@ -43,12 +43,14 @@ h1 {
 .child-input {
   flex: 1;
   margin-right: 8px;
-  padding: 4px;
+  padding: 8px;
   font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
 }
 
 .btn {
-  padding: 4px 8px;
+  padding: 6px 10px;
   margin-left: 4px;
   border: none;
   border-radius: 4px;
@@ -79,19 +81,30 @@ h1 {
 .add-child-section {
   margin-top: 20px;
   display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .new-child-input {
-  flex: 1;
-  margin-right: 8px;
+  flex: 1 1 calc(33% - 10px); /* Ensure each input takes one-third of the width */
   padding: 8px;
   font-size: 16px;
   border: 1px solid #ddd;
   border-radius: 4px;
+  box-sizing: border-box; /* Ensure padding is included in width */
 }
 
 .add-btn {
+  flex: 1 1 calc(100% - 10px); /* Make button full width in row */
+  padding: 10px;
   background-color: #5cb85c;
   color: white;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+}
+
+.add-btn:hover {
+  background-color: #4cae4c;
 }

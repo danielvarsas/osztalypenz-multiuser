@@ -32,4 +32,27 @@ def verify_pin(class_name):
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+        
+@auth_bp.route('/<class_name>/<child_name>/verify-pin', methods=['POST'])
+def verify_child_pin(class_name, child_name):
+    try:
+        data = request.json
+        pin_code = data.get('pin_code')
+
+        if not pin_code:
+            return jsonify({'error': 'PIN is required'}), 400
+
+        # Connect to the class-specific database
+        connection = get_db_connection(f"{class_name.lower()}_db")
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT pin_code FROM children WHERE url_name = %s LIMIT 1", (child_name,))
+        child = cursor.fetchone()
+
+        if child and check_pin(pin_code, child['pin_code']):
+            return jsonify({'message': 'PIN verified successfully'}), 200
+        else:
+            return jsonify({'error': 'Invalid PIN'}), 401
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 

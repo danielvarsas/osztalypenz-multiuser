@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import './ManageChildren.css'; 
+import './ManageChildren.css';
 
 const ManageChildren = () => {
   const { className } = useParams();
   const [children, setChildren] = useState([]);
   const [newChildName, setNewChildName] = useState('');
-  const [newChildEmail, setNewChildEmail] = useState('');  // New state for email
+  const [newChildEmail, setNewChildEmail] = useState('');
+  const [newChildPinCode, setNewChildPinCode] = useState(''); // New state for PIN code
   const [editingChild, setEditingChild] = useState(null);
   const [message, setMessage] = useState('');
-  //const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}`;
   const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/api`;
-
 
   useEffect(() => {
     const fetchChildren = async () => {
@@ -30,16 +29,21 @@ const ManageChildren = () => {
   }, [className]);
 
   const handleAddChild = async () => {
-    if (!newChildName || !newChildEmail) {
-      setMessage('Child name and email are required.');
+    if (!newChildName || !newChildEmail || !newChildPinCode) {
+      setMessage('Child name, email, and PIN are required.');
       return;
     }
 
     try {
-      const response = await axios.post(`${apiUrl}/${className}/children`, { name: newChildName, email: newChildEmail });
-      setChildren([...children, { id: response.data.id, name: newChildName, email: newChildEmail, isDeleted: false }]);
+      const response = await axios.post(`${apiUrl}/${className}/children`, {
+        name: newChildName,
+        email: newChildEmail,
+        pin_code: newChildPinCode
+      });
+      setChildren([...children, { id: response.data.id, name: newChildName, email: newChildEmail, pin_code: newChildPinCode, isDeleted: false }]);
       setNewChildName('');
-      setNewChildEmail('');  // Clear email input after adding
+      setNewChildEmail('');
+      setNewChildPinCode(''); // Clear PIN code input after adding
       setMessage('Child added successfully!');
     } catch (error) {
       console.error('Error adding child:', error);
@@ -59,14 +63,18 @@ const ManageChildren = () => {
   };
 
   const handleModifyChild = async (child) => {
-    if (!editingChild || editingChild.name.trim() === '' || editingChild.email.trim() === '') {
-      setMessage('Child name and email are required.');
+    if (!editingChild || editingChild.name.trim() === '' || editingChild.email.trim() === '' || editingChild.pin_code.trim() === '') {
+      setMessage('Child name, email, and PIN are required.');
       return;
     }
 
     try {
-      await axios.put(`${apiUrl}/${className}/children/${child.id}`, { name: editingChild.name, email: editingChild.email });
-      setChildren(children.map((c) => (c.id === child.id ? { ...c, name: editingChild.name, email: editingChild.email } : c)));
+      await axios.put(`${apiUrl}/${className}/children/${child.id}`, {
+        name: editingChild.name,
+        email: editingChild.email,
+        pin_code: editingChild.pin_code
+      });
+      setChildren(children.map((c) => (c.id === child.id ? { ...c, name: editingChild.name, email: editingChild.email, pin_code: editingChild.pin_code } : c)));
       setEditingChild(null);
       setMessage('Child modified successfully!');
     } catch (error) {
@@ -102,6 +110,12 @@ const ManageChildren = () => {
                   value={editingChild.email}
                   onChange={(e) => setEditingChild({ ...editingChild, email: e.target.value })}
                 />
+                <input
+                  type="password"
+                  className="child-input"
+                  value={editingChild.pin_code}
+                  onChange={(e) => setEditingChild({ ...editingChild, pin_code: e.target.value })}
+                />
               </>
             ) : (
               <>
@@ -130,12 +144,20 @@ const ManageChildren = () => {
           onChange={(e) => setNewChildName(e.target.value)}
         />
         <input
+          type="password"
+          placeholder="Tanuló PIN kód"
+          value={newChildPinCode}
+          className="new-child-input"
+          onChange={(e) => setNewChildPinCode(e.target.value)}
+        />
+        <input
           type="email"
           placeholder="Tanuló email"
           value={newChildEmail}
           className="new-child-input"
           onChange={(e) => setNewChildEmail(e.target.value)}
         />
+        
         <button className="btn add-btn" onClick={handleAddChild}>Hozzáadás</button>
       </div>
     </div>

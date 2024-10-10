@@ -1,51 +1,58 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom'; // Import useNavigate for redirection
 import axios from 'axios';
 import '../App.css'; // Import the new CSS file
 
 const StudentAccountMovements = () => {
-  const { className, url_name } = useParams(); // Get both className and url_name from the URL
+  const { className, childName } = useParams();
+  const navigate = useNavigate();
   const [movements, setMovements] = useState([]);
-  const [totalPayments, setTotalPayments] = useState(0);
+  const [balance, setBalance] = useState(0);
 
-  const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}:5000`;
+  // Check if the child is authenticated
+  useEffect(() => {
+    const isAuthenticated = localStorage.getItem(`${className}_${childName}_authenticated`);
+    if (!isAuthenticated) {
+      navigate(`/${className}/${childName}/login`);
+    }
+  }, [className, childName, navigate]);
+
+  const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/api`;
 
   useEffect(() => {
     const fetchMovements = async () => {
       try {
-        // Fetch movements using className and url_name
-        const response = await axios.get(`${apiUrl}/${className}/${url_name}/account-movements`);
+        const response = await axios.get(`${apiUrl}/${className}/${childName}/account-movements`);
         setMovements(response.data);
 
-        // Calculate the total payments for the student
-        const total = response.data.reduce((acc, movement) => {
+        // Calculate the balance for the child
+        const calculatedBalance = response.data.reduce((acc, movement) => {
           const amount = parseFloat(movement.amount) || 0;
-          return movement.type === 'add' ? acc + amount : acc;
+          return movement.type === 'add' ? acc + amount : acc - amount;
         }, 0);
-        setTotalPayments(total);
+
+        setBalance(calculatedBalance);
       } catch (error) {
         console.error('Error fetching account movements:', error);
       }
     };
 
     fetchMovements();
-  }, [className, url_name, apiUrl]);
+  }, [className, childName]);
 
-  // Function to determine the row background color
   const getRowStyle = (reason) => {
     return reason === 'Befizetés' ? { backgroundColor: '#4297a0' } : { backgroundColor: '#e57f84' };
   };
 
-  // Function to format the amount without decimals
   const formatAmount = (amount) => {
     return `${Math.round(amount)} Ft`; // Rounds to the nearest integer and adds "Ft"
   };
 
   return (
     <section>
-      <h1>Pénzmozgások: {url_name}</h1>
-      {/* Display the total payments */}
-      <h2 style={{ textAlign: 'center', color: 'black', margin: '20px 0' }}>Teljes befizetés: {formatAmount(totalPayments)}</h2>
+      <h1>Pénzmozgások</h1>
+      {/* Display the balance */}
+      <h2 style={{ textAlign: 'center', color: 'black', margin: '20px 0' }}>Egyenleg: {formatAmount(balance)}</h2>
       <div className="tbl-header">
         <table>
           <thead>
@@ -53,7 +60,6 @@ const StudentAccountMovements = () => {
               <th>Befizetés / Kivét</th>
               <th>Összeg</th>
               <th>Ok</th>
-              <th>Dátum</th>
             </tr>
           </thead>
         </table>
@@ -66,7 +72,6 @@ const StudentAccountMovements = () => {
                 <td>{movement.type === 'add' ? 'Befizetés' : 'Kivét'}</td>
                 <td>{formatAmount(movement.amount)}</td>
                 <td>{movement.reason || 'Befizetés'}</td>
-                <td>{new Date(movement.created_at).toLocaleDateString()}</td>
               </tr>
             ))}
           </tbody>
