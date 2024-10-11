@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './ManageChildren.css';
 
 const ManageChildren = () => {
   const { className } = useParams();
+  const navigate = useNavigate();
   const [children, setChildren] = useState([]);
   const [newChildName, setNewChildName] = useState('');
   const [newChildEmail, setNewChildEmail] = useState('');
@@ -159,6 +160,10 @@ const ManageChildren = () => {
         />
         
         <button className="btn add-btn" onClick={handleAddChild}>Hozzáadás</button>
+      </div>
+
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+        <button className="back-to-dashboard-button" onClick={() => navigate(`/${className}/dashboard`)}>Vissza a menübe</button>
       </div>
     </div>
   );
