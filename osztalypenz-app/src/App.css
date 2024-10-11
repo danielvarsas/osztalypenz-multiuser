@@ -325,11 +325,8 @@ td {
 
 /* Center the login form vertically and horizontally */
 .login-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh; /* Full viewport height */
+  max-width: 300px;
+  margin: 0 auto;
   text-align: center;
 }
 
@@ -340,34 +337,34 @@ h1 {
 }
 
 .pin-input {
-  font-size: 2rem;
-  padding: 15px;
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  font-size: 16px;
   border: 1px solid #ddd;
-  border-radius: 8px;
-  width: 200px;
-  text-align: center;
-  margin-bottom: 20px;
+  border-radius: 4px;
 }
 
 .login-button {
-  background-color: #4297a0; /* Button color */
+  padding: 10px 20px;
+  font-size: 16px;
   color: white;
+  background-color: #28a745;
   border: none;
-  border-radius: 8px;
-  font-size: 1.5rem;
-  padding: 10px 30px;
+  border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  width: 100%;
 }
-
 .login-button:hover {
-  opacity: 0.9;
+  background-color: #218838;
 }
 
 .error-message {
-  color: red;
-  margin-top: 20px;
+  color: #d9534f;
+  margin-top: 15px;
 }
+
+
 
 /* App.css */
 
@@ -427,4 +424,10 @@ h1 {
 .qr-code-image {
   max-width: 100%;
   height: auto;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }

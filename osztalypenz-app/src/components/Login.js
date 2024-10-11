@@ -35,7 +35,7 @@ const Login = () => {
   return (
     <div className="login-container">
       <h1>Belépés</h1>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="login-form">
         <input
           type="password"
           value={pin}

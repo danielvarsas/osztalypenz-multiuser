@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
+import '../App.css'; // Ensure that the CSS file is imported
 
 const ChildLogin = () => {
   const { className, childName } = useParams();
@@ -10,17 +10,24 @@ const ChildLogin = () => {
 
   const apiUrl = process.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/auth`;
 
-  const handleLogin = async () => {
+  const handleLogin = async (e) => {
+    e.preventDefault(); // Prevent the default form submission
+    setMessage(''); // Reset the message
+
     try {
-      const response = await axios.post(`${apiUrl}/${className}/${childName}/verify-pin`, { pin_code: pinCode });
-      console.log("Constructed URL:", `${apiUrl}/${className}/${childName}/verify-pin`);
-      
-      if (response.status === 200) {
-        // Assuming successful verification, store auth info
+      const response = await fetch(`${apiUrl}/${className}/${childName}/verify-pin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin_code: pinCode }),
+        credentials: 'include' // Include session cookie
+      });
+
+      if (response.ok) {
         localStorage.setItem(`${className}_${childName}_authenticated`, 'true');
         navigate(`/${className}/${childName}`);
       } else {
-        setMessage('Invalid PIN');
+        const data = await response.json();
+        setMessage(data.error || 'Invalid PIN');
       }
     } catch (error) {
       console.error('Error verifying PIN:', error);
@@ -29,16 +36,21 @@ const ChildLogin = () => {
   };
 
   return (
-    <div>
-      <h1>Login to Access Your Account</h1>
-      <input
-        type="password"
-        value={pinCode}
-        onChange={(e) => setPinCode(e.target.value)}
-        placeholder="Enter your PIN"
-      />
-      <button onClick={handleLogin}>Login</button>
-      {message && <p>{message}</p>}
+    <div className="login-container">
+      <h1>Belépés</h1>
+      <form onSubmit={handleLogin} className="login-form">
+        <input
+          type="password"
+          value={pinCode}
+          onChange={(e) => setPinCode(e.target.value)}
+          maxLength="4"
+          placeholder="PIN kód"
+          className="pin-input"
+          required
+        />
+        <button type="submit" className="login-button">Gyerünk!</button>
+      </form>
+      {message && <p className="error-message">{message}</p>}
     </div>
   );
 };
