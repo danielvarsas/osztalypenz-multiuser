@@ -61,7 +61,7 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/osztalypenz_backend:latest
 
-run-server-script:
+  run-server-script:
     runs-on: ubuntu-latest
     needs: [build-frontend, build-backend]
     name: SSH into Server and Run Reload Script
