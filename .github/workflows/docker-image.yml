@@ -60,3 +60,22 @@ jobs:
           file: ./backend/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/osztalypenz_backend:latest
+
+run-server-script:
+    runs-on: ubuntu-latest
+    needs: [build-frontend, build-backend]
+    name: SSH into Server and Run Reload Script
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Run reload_images.sh on server
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: 80.211.204.17
+          username: dani
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd ~/osztalypenz_project/test
+            ./reload_images.sh
