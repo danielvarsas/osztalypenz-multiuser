@@ -1,4 +1,4 @@
-# Osztalype.nz 1.0 Beta
+# Osztalype.nz 1.1 Beta
 
 ## Description
 

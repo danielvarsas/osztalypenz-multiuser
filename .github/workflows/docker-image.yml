@@ -69,13 +69,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
-      - name: Run reload_images.sh on server
+      - name: Run reload_images.sh on server with verbose SSH
         uses: appleboy/ssh-action@v0.1.4
         with:
           host: 80.211.204.17
           username: dani
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
+            ssh -vvv -o StrictHostKeyChecking=no dani@80.211.204.17 <<'ENDSSH'
             cd ~/osztalypenz_project/test
             ./reload_images.sh
+            ENDSSH
