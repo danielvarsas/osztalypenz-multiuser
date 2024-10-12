@@ -59,13 +59,16 @@ const AccountantDashboard = () => {
   if (!classExists) {
     return <div>Class not found. Redirecting...</div>;
   }
-
+  
+// Capitalize the first letter of className
+  const capitalizedClassName = className.charAt(0).toUpperCase() + className.slice(1);
+  
   // If class exists and user is authorized, render the dashboard
   return (
     <div>
       {/* Header Section */}
       <header className="app-header">
-        <h1>Osztálypénz - {className}</h1>
+        <h1>Osztálypénz - {capitalizedClassName}</h1>
       </header>
 
       {/* Render buttons for navigation */}

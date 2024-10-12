@@ -60,9 +60,13 @@ const AccountMovements = ({ isStudentView }) => {
     return `${year}.${month}.${day}`;
   };
   
+  const capitalizedClassName = className ? className.charAt(0).toUpperCase() + className.slice(1) : '';
+  const capitalizedChildName = childName ? childName.charAt(0).toUpperCase() + childName.slice(1) : '';
+  
+  
   return (
     <section>
-       <h1>{isStudentView ? `${childName} - Pénzmozgások` : `${className} - Pénzmozgások`}</h1>
+       <h1>{isStudentView ? `${capitalizedChildName} - Pénzmozgások` : `${capitalizedClassName} - Pénzmozgások`}</h1>
       <h2 style={{ textAlign: 'center', color: 'black', margin: '20px 0' }}>Egyenleg: {formatAmount(balance)}</h2>
       <div className="tbl-content">
         <table>
