@@ -12,14 +12,15 @@ import Login from './components/Login';
 import StudentAccountMovements from './components/StudentAccountMovements';
 import Pay from './components/Pay';
 import ChildLogin from './components/ChildLogin';
+import LandingPage from './components/LandingPage';
 
 
 const App = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Dashboard />} />
-         <Route path="/:className/login" element={<Login />} />
+        <Route path="/" element={<LandingPage />} /> {/* New route for the Landing Page */}
+        <Route path="/:className/login" element={<Login />} />
         <Route path="/add-class" element={<AddClass />} /> {/* Route for adding a new class */}
         <Route path="/:className/student/:studentId" element={<StudentAccountMovements />} />
         <Route path="/404" element={<NotFoundPage />} />
