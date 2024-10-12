@@ -64,7 +64,7 @@ const AccountMovements = ({ isStudentView }) => {
     <section>
        <h1>{isStudentView ? `${childName} - Pénzmozgások` : `${className} - Pénzmozgások`}</h1>
       <h2 style={{ textAlign: 'center', color: 'black', margin: '20px 0' }}>Egyenleg: {formatAmount(balance)}</h2>
-      <div className="tbl-content" style={{ maxHeight: movements.length > 5 ? '300px' : 'auto', overflowY: 'auto' }}>
+      <div className="tbl-content">
         <table>
           <thead>
             <tr>
